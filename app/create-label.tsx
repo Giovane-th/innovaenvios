@@ -15,6 +15,8 @@ import { Alert } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import { cn } from "@/lib/utils";
+import { AddStudentModal } from "./add-student-modal";
+import { useStudents } from "@/hooks/use-students";
 
 interface FormData {
   // Remetente
@@ -50,6 +52,8 @@ interface FormData {
 export default function CreateLabelScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { searchStudents, loadStudents } = useStudents();
+  const [showAddStudentModal, setShowAddStudentModal] = useState(false);
   const [form, setForm] = useState<FormData>({
     senderName: "Minha Empresa LTDA",
     senderCEP: "01310100",
@@ -80,9 +84,34 @@ export default function CreateLabelScreen() {
 
   const [loading, setLoading] = useState(false);
   const [expandedSection, setExpandedSection] = useState<"sender" | "recipient" | "object">("recipient");
+  const [studentSearchQuery, setStudentSearchQuery] = useState("");
+  const [showStudentList, setShowStudentList] = useState(false);
+  const studentSearchResults = studentSearchQuery.trim() ? searchStudents(studentSearchQuery) : { students: [], total: 0 };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
     setForm((prev) => ({ ...prev, [field]: value }));
+  };
+
+  const handleSelectStudent = (studentId: string) => {
+    loadStudents().then(() => {
+      const results = searchStudents("");
+      const student = results.students.find((s) => s.id === studentId);
+      if (student) {
+        setForm((prev) => ({
+          ...prev,
+          recipientName: student.nome,
+          recipientCEP: student.cep,
+          recipientAddress: student.endereco,
+          recipientNumber: student.numero,
+          recipientComplement: student.complemento || "",
+          recipientCity: student.cidade,
+          recipientState: student.estado,
+          recipientPhone: student.telefone || "",
+        }));
+        setShowStudentList(false);
+        setStudentSearchQuery("");
+      }
+    });
   };
 
   const handleGenerateLabel = async () => {
@@ -218,6 +247,56 @@ export default function CreateLabelScreen() {
         <SectionHeader title="📬 Destinatário" section="recipient" />
         {expandedSection === "recipient" && (
           <View className="mb-6 pb-4 border-b border-border">
+            {/* Buttons for Student Management */}
+            <View className="flex-row gap-2 mb-4">
+              <TouchableOpacity
+                onPress={() => setShowStudentList(!showStudentList)}
+                className="flex-1 bg-blue-100 rounded-lg py-2 px-3 flex-row items-center justify-center gap-2"
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="search" size={18} color={colors.primary} />
+                <Text className="text-sm font-semibold text-primary">Buscar Cliente</Text>
+              </TouchableOpacity>
+              <TouchableOpacity
+                onPress={() => setShowAddStudentModal(true)}
+                className="flex-1 bg-green-100 rounded-lg py-2 px-3 flex-row items-center justify-center gap-2"
+                activeOpacity={0.7}
+              >
+                <MaterialIcons name="person-add" size={18} color="#22C55E" />
+                <Text className="text-sm font-semibold text-success">Novo Cliente</Text>
+              </TouchableOpacity>
+            </View>
+
+            {/* Student Search */}
+            {showStudentList && (
+              <View className="mb-4 p-3 bg-surface rounded-lg border border-border">
+                <TextInput
+                  placeholder="Buscar por nome ou email..."
+                  value={studentSearchQuery}
+                  onChangeText={setStudentSearchQuery}
+                  placeholderTextColor={colors.muted}
+                  className="border border-border rounded-lg px-3 py-2 text-foreground mb-2"
+                />
+                {studentSearchResults.total > 0 ? (
+                  <ScrollView className="max-h-40">
+                    {studentSearchResults.students.map((student) => (
+                      <TouchableOpacity
+                        key={student.id}
+                        onPress={() => handleSelectStudent(student.id)}
+                        className="py-2 px-2 border-b border-border"
+                        activeOpacity={0.7}
+                      >
+                        <Text className="text-sm font-semibold text-foreground">{student.nome}</Text>
+                        <Text className="text-xs text-muted">{student.endereco}, {student.numero} - {student.cidade}</Text>
+                      </TouchableOpacity>
+                    ))}
+                  </ScrollView>
+                ) : studentSearchQuery.trim() ? (
+                  <Text className="text-sm text-muted text-center py-2">Nenhum cliente encontrado</Text>
+                ) : null}
+              </View>
+            )}
+
             <FormField
               label="Nome *"
               value={form.recipientName}
@@ -394,6 +473,16 @@ export default function CreateLabelScreen() {
           </TouchableOpacity>
         </View>
       </ScrollView>
+
+      {/* Add Student Modal */}
+      <AddStudentModal
+        visible={showAddStudentModal}
+        onClose={() => setShowAddStudentModal(false)}
+        onStudentAdded={(studentId) => {
+          handleSelectStudent(studentId);
+          loadStudents();
+        }}
+      />
     </ScreenContainer>
   );
 }

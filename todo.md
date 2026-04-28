@@ -123,6 +123,7 @@
 - [x] Validação e parsing de arquivo CSV
 - [x] Banco de dados de alunos (AsyncStorage)
 - [x] Busca rápida de alunos por nome/email
-- [ ] Tela de gerenciamento de alunos (listar, editar, deletar)
-- [ ] Auto-preenchimento na tela de criar etiqueta
+- [x] Tela de gerenciamento de alunos (listar, editar, deletar)
+- [x] Auto-preenchimento na tela de criar etiqueta
 - [x] Sincronização de dados offline
+- [x] Botão de novo cliente na tela de criar etiqueta
