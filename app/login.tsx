@@ -1,31 +1,41 @@
-import { ScrollView, Text, View, TextInput, TouchableOpacity, ActivityIndicator } from "react-native";
+import {
+  ScrollView,
+  Text,
+  View,
+  TouchableOpacity,
+  TextInput,
+  ActivityIndicator,
+  Alert,
+} from "react-native";
 import { useState } from "react";
 import { Image } from "expo-image";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
-import { useCorreiosAuth } from "@/hooks/use-correios-auth";
-import { cn } from "@/lib/utils";
+import { useAuth } from "@/lib/auth-context";
+import { MaterialIcons } from "@expo/vector-icons";
 
 export default function LoginScreen() {
   const colors = useColors();
-  const [cartao, setCartao] = useState("");
+  const { login, loading } = useAuth();
+
+  const [cartaoPostagem, setCartaoPostagem] = useState("");
   const [contrato, setContrato] = useState("");
-  const [senha, setSenha] = useState("");
   const [cnpj, setCNPJ] = useState("");
-  const { login, loading, error } = useCorreiosAuth();
+  const [showPassword, setShowPassword] = useState(false);
 
   const handleLogin = async () => {
-    if (!cartao.trim() || !contrato.trim() || !senha.trim()) {
+    if (!cartaoPostagem.trim() || !contrato.trim()) {
+      Alert.alert("Erro", "Preencha o Cartão de Postagem e Contrato");
       return;
     }
 
     try {
-      await login(cartao, contrato, senha, cnpj || undefined);
-      // Após sucesso, redirecionar para Home
-      // TODO: Implementar navegação para Home
-    } catch (err) {
-      // Erro já é tratado pelo hook
-      console.error("Login error:", err);
+      await login(cartaoPostagem, contrato, cnpj || undefined);
+    } catch (error) {
+      Alert.alert(
+        "Erro ao fazer login",
+        error instanceof Error ? error.message : "Tente novamente"
+      );
     }
   };
 
@@ -56,29 +66,29 @@ export default function LoginScreen() {
                 Cartão de Postagem
               </Text>
               <TextInput
-                placeholder="00000000000"
-                value={cartao}
-                onChangeText={setCartao}
+                placeholder="0076337634"
+                value={cartaoPostagem}
+                onChangeText={setCartaoPostagem}
                 editable={!loading}
                 placeholderTextColor={colors.muted}
-                className="border border-border rounded-lg px-4 py-3 text-foreground bg-surface"
-                keyboardType="number-pad"
+                className="border border-border rounded-lg px-4 py-3 text-foreground bg-white"
+                keyboardType="numeric"
               />
             </View>
 
-            {/* Número do Contrato */}
+            {/* Contrato */}
             <View>
               <Text className="text-sm font-semibold text-foreground mb-2">
                 Número do Contrato
               </Text>
               <TextInput
-                placeholder="0000000000"
+                placeholder="9912528344"
                 value={contrato}
                 onChangeText={setContrato}
                 editable={!loading}
                 placeholderTextColor={colors.muted}
-                className="border border-border rounded-lg px-4 py-3 text-foreground bg-surface"
-                keyboardType="number-pad"
+                className="border border-border rounded-lg px-4 py-3 text-foreground bg-white"
+                keyboardType="numeric"
               />
             </View>
 
@@ -88,71 +98,47 @@ export default function LoginScreen() {
                 CNPJ (Opcional)
               </Text>
               <TextInput
-                placeholder="00000000000000"
+                placeholder="36543139000129"
                 value={cnpj}
                 onChangeText={setCNPJ}
                 editable={!loading}
                 placeholderTextColor={colors.muted}
-                className="border border-border rounded-lg px-4 py-3 text-foreground bg-surface"
-                keyboardType="number-pad"
+                className="border border-border rounded-lg px-4 py-3 text-foreground bg-white"
+                keyboardType="numeric"
               />
             </View>
-
-            {/* Senha de Componente */}
-            <View>
-              <Text className="text-sm font-semibold text-foreground mb-2">
-                Senha de Componente
-              </Text>
-              <TextInput
-                placeholder="••••••••"
-                value={senha}
-                onChangeText={setSenha}
-                editable={!loading}
-                secureTextEntry
-                placeholderTextColor={colors.muted}
-                className="border border-border rounded-lg px-4 py-3 text-foreground bg-surface"
-              />
-            </View>
-
-            {/* Error Message */}
-            {error ? (
-              <View className="bg-red-50 border border-error rounded-lg p-3">
-                <Text className="text-error text-sm">{error}</Text>
-              </View>
-            ) : null}
 
             {/* Login Button */}
             <TouchableOpacity
               onPress={handleLogin}
-              disabled={loading || !cartao.trim() || !contrato.trim() || !senha.trim()}
-              className={cn(
-                "rounded-lg py-3 flex-row items-center justify-center gap-2",
-                loading || !cartao.trim() || !contrato.trim() || !senha.trim()
-                  ? "bg-primary opacity-70"
-                  : "bg-primary"
-              )}
+              disabled={loading}
+              className="bg-primary rounded-lg py-4 flex-row items-center justify-center gap-2 mt-4"
+              activeOpacity={0.7}
             >
               {loading ? (
                 <ActivityIndicator color="white" size="small" />
-              ) : null}
+              ) : (
+                <MaterialIcons name="login" size={20} color="white" />
+              )}
               <Text className="text-white font-semibold text-base">
                 {loading ? "Entrando..." : "Entrar"}
               </Text>
             </TouchableOpacity>
-
-            {/* Forgot Password Link */}
-            <TouchableOpacity className="items-center py-2">
-              <Text className="text-primary text-sm font-medium">
-                Esqueceu a senha?
-              </Text>
-            </TouchableOpacity>
           </View>
 
-          {/* Footer */}
-          <View className="items-center pt-8">
-            <Text className="text-xs text-muted text-center">
-              Conecte-se com segurança aos Correios
-            </Text>
+          {/* Info Section */}
+          <View className="bg-blue-50 rounded-lg p-4 border border-blue-200 mt-6">
+            <View className="flex-row gap-3">
+              <MaterialIcons name="info" size={20} color="#0066CC" />
+              <View className="flex-1">
+                <Text className="text-xs font-semibold text-blue-900">
+                  Dados de Teste
+                </Text>
+                <Text className="text-xs text-blue-800 mt-1">
+                  Use suas credenciais dos Correios para fazer login
+                </Text>
+              </View>
+            </View>
           </View>
         </View>
       </ScrollView>

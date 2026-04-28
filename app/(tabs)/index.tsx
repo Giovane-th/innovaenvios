@@ -1,105 +1,125 @@
-import { ScrollView, Text, View, TouchableOpacity, FlatList, RefreshControl } from "react-native";
-import { useState, useCallback } from "react";
+import {
+  ScrollView,
+  Text,
+  View,
+  TouchableOpacity,
+  FlatList,
+  RefreshControl,
+} from "react-native";
+import { useState, useEffect } from "react";
+import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useAuth } from "@/lib/auth-context";
 import { MaterialIcons } from "@expo/vector-icons";
+import AsyncStorage from "@react-native-async-storage/async-storage";
 
-interface ShippingLabel {
+interface ShippingItem {
   id: string;
-  trackingCode: string;
+  code: string;
   recipient: string;
-  status: "generated" | "posted" | "transit" | "delivered";
+  status: "Gerada" | "Postada" | "Em trânsito" | "Entregue";
   date: string;
 }
 
-const MOCK_LABELS: ShippingLabel[] = [
-  {
-    id: "1",
-    trackingCode: "AA123456789BR",
-    recipient: "João Silva",
-    status: "generated",
-    date: "Hoje",
-  },
-  {
-    id: "2",
-    trackingCode: "AA123456790BR",
-    recipient: "Maria Santos",
-    status: "posted",
-    date: "Ontem",
-  },
-  {
-    id: "3",
-    trackingCode: "AA123456791BR",
-    recipient: "Pedro Costa",
-    status: "transit",
-    date: "2 dias atrás",
-  },
-];
-
-const STATUS_LABELS = {
-  generated: "Gerada",
-  posted: "Postada",
-  transit: "Em trânsito",
-  delivered: "Entregue",
-};
-
-const STATUS_COLORS = {
-  generated: "#FFD700",
-  posted: "#0066CC",
-  transit: "#22B573",
-  delivered: "#22C55E",
-};
-
 export default function HomeScreen() {
   const colors = useColors();
+  const router = useRouter();
+  const { user, logout } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
-  const [labels, setLabels] = useState<ShippingLabel[]>(MOCK_LABELS);
+  const [shippings, setShippings] = useState<ShippingItem[]>([]);
 
-  const onRefresh = useCallback(() => {
-    setRefreshing(true);
-    // Simular carregamento de dados
-    setTimeout(() => {
-      setRefreshing(false);
-    }, 1000);
+  useEffect(() => {
+    loadShippings();
   }, []);
 
-  const renderLabelItem = ({ item }: { item: ShippingLabel }) => (
-    <TouchableOpacity
-      className="bg-surface rounded-lg p-4 mb-3 border border-border flex-row items-center justify-between"
-      activeOpacity={0.7}
-    >
-      <View className="flex-1">
-        <Text className="text-sm font-semibold text-foreground">
-          {item.trackingCode}
-        </Text>
-        <Text className="text-xs text-muted mt-1">{item.recipient}</Text>
-        <Text className="text-xs text-muted mt-1">{item.date}</Text>
-      </View>
-      <View
-        className="px-3 py-1 rounded-full"
-        style={{ backgroundColor: STATUS_COLORS[item.status] + "20" }}
-      >
-        <Text
-          className="text-xs font-medium"
-          style={{ color: STATUS_COLORS[item.status] }}
-        >
-          {STATUS_LABELS[item.status]}
-        </Text>
-      </View>
-    </TouchableOpacity>
-  );
+  const loadShippings = async () => {
+    try {
+      const stored = await AsyncStorage.getItem("shipping_history");
+      if (stored) {
+        setShippings(JSON.parse(stored));
+      }
+    } catch (error) {
+      console.error("Erro ao carregar histórico:", error);
+    }
+  };
+
+  const onRefresh = async () => {
+    setRefreshing(true);
+    await loadShippings();
+    setRefreshing(false);
+  };
+
+  const handleLogout = () => {
+    logout();
+  };
+
+  const handleCreateLabel = () => {
+    router.push("/create-label");
+  };
+
+  const handleViewLabel = (item: ShippingItem) => {
+    router.push({
+      pathname: "/label-details",
+      params: { id: item.id, code: item.code },
+    });
+  };
+
+  const getStatusColor = (status: string) => {
+    switch (status) {
+      case "Gerada":
+        return colors.primary;
+      case "Postada":
+        return colors.secondary;
+      case "Em trânsito":
+        return "#F59E0B";
+      case "Entregue":
+        return colors.success;
+      default:
+        return colors.muted;
+    }
+  };
 
   return (
     <ScreenContainer className="flex-1">
       <FlatList
-        data={labels}
-        renderItem={renderLabelItem}
+        data={shippings.slice(0, 5)}
+        renderItem={({ item }) => (
+          <TouchableOpacity
+            onPress={() => handleViewLabel(item)}
+            activeOpacity={0.7}
+            className="bg-surface rounded-lg p-4 border border-border mb-3 flex-row items-center justify-between"
+          >
+            <View className="flex-1">
+              <Text className="text-base font-semibold text-foreground">
+                {item.code}
+              </Text>
+              <Text className="text-sm text-muted mt-1">{item.recipient}</Text>
+              <Text className="text-xs text-muted mt-1">{item.date}</Text>
+            </View>
+
+            <View className="items-end gap-2">
+              <View
+                style={{ backgroundColor: getStatusColor(item.status) + "20" }}
+                className="rounded-full px-3 py-1"
+              >
+                <Text
+                  style={{ color: getStatusColor(item.status) }}
+                  className="text-xs font-semibold"
+                >
+                  {item.status}
+                </Text>
+              </View>
+              <MaterialIcons name="chevron-right" size={20} color={colors.muted} />
+            </View>
+          </TouchableOpacity>
+        )}
         keyExtractor={(item) => item.id}
         scrollEnabled={false}
         ListHeaderComponent={
           <View className="pb-6">
             {/* Header */}
-            <View className="flex-row items-center justify-between mb-8">
+            <View className="flex-row items-center justify-between mb-6">
               <View>
                 <Text className="text-2xl font-bold text-foreground">
                   In'Nova Envios
@@ -108,41 +128,69 @@ export default function HomeScreen() {
                   Bem-vindo de volta!
                 </Text>
               </View>
+
               <TouchableOpacity
-                className="w-10 h-10 rounded-full bg-surface items-center justify-center"
+                onPress={() => router.push("/settings-printer")}
+                className="p-3 bg-surface rounded-lg border border-border"
                 activeOpacity={0.7}
               >
-                <MaterialIcons name="menu" size={24} color={colors.foreground} />
+                <MaterialIcons name="settings" size={24} color={colors.primary} />
               </TouchableOpacity>
             </View>
 
-            {/* Summary Cards */}
-            <View className="flex-row gap-4 mb-8">
-              {/* Envios Hoje */}
-              <View className="flex-1 bg-gradient-to-br from-blue-50 to-blue-100 rounded-lg p-4 border border-blue-200">
-                <Text className="text-xs text-muted font-medium">Envios Hoje</Text>
-                <Text className="text-3xl font-bold text-primary mt-2">5</Text>
-                <Text className="text-xs text-muted mt-1">etiquetas geradas</Text>
+            {/* Stats Cards */}
+            <View className="flex-row gap-3 mb-6">
+              <View className="flex-1 bg-blue-50 rounded-lg p-4 border border-blue-200">
+                <Text className="text-sm text-blue-600 font-semibold">Envios Hoje</Text>
+                <Text className="text-3xl font-bold text-primary mt-2">
+                  {shippings.filter((s) => s.date === new Date().toISOString().split("T")[0])
+                    .length}
+                </Text>
+                <Text className="text-xs text-blue-600 mt-1">etiquetas geradas</Text>
               </View>
 
-              {/* Pendentes */}
-              <View className="flex-1 bg-gradient-to-br from-green-50 to-green-100 rounded-lg p-4 border border-green-200">
-                <Text className="text-xs text-muted font-medium">Pendentes</Text>
-                <Text className="text-3xl font-bold text-secondary mt-2">2</Text>
-                <Text className="text-xs text-muted mt-1">para postar</Text>
+              <View className="flex-1 bg-green-50 rounded-lg p-4 border border-green-200">
+                <Text className="text-sm text-green-600 font-semibold">Pendentes</Text>
+                <Text className="text-3xl font-bold text-secondary mt-2">
+                  {shippings.filter((s) => s.status === "Gerada").length}
+                </Text>
+                <Text className="text-xs text-green-600 mt-1">para postar</Text>
               </View>
             </View>
 
-            {/* Últimos Envios Section */}
+            {/* Últimos Envios */}
             <View className="flex-row items-center justify-between mb-4">
               <Text className="text-lg font-semibold text-foreground">
                 Últimos Envios
               </Text>
-              <TouchableOpacity activeOpacity={0.7}>
-                <Text className="text-primary text-sm font-medium">Ver tudo</Text>
-              </TouchableOpacity>
+              {shippings.length > 0 && (
+                <TouchableOpacity activeOpacity={0.7}>
+                  <Text className="text-primary font-semibold">Ver tudo</Text>
+                </TouchableOpacity>
+              )}
             </View>
           </View>
+        }
+        ListEmptyComponent={
+          <View className="bg-surface rounded-lg p-6 border border-border items-center my-8">
+            <MaterialIcons name="local-shipping" size={48} color={colors.muted} />
+            <Text className="text-foreground font-semibold mt-3 text-center">
+              Nenhum envio ainda
+            </Text>
+            <Text className="text-muted text-sm text-center mt-1">
+              Crie sua primeira etiqueta para começar
+            </Text>
+          </View>
+        }
+        ListFooterComponent={
+          <TouchableOpacity
+            onPress={handleLogout}
+            className="bg-red-50 rounded-lg py-3 flex-row items-center justify-center gap-2 border border-red-200 mt-8 mb-8"
+            activeOpacity={0.7}
+          >
+            <MaterialIcons name="logout" size={20} color="#EF4444" />
+            <Text className="text-red-600 font-semibold">Sair</Text>
+          </TouchableOpacity>
         }
         refreshControl={
           <RefreshControl refreshing={refreshing} onRefresh={onRefresh} />
@@ -152,6 +200,7 @@ export default function HomeScreen() {
 
       {/* Floating Action Button */}
       <TouchableOpacity
+        onPress={handleCreateLabel}
         className="absolute bottom-24 right-6 w-16 h-16 rounded-full bg-primary items-center justify-center shadow-lg"
         activeOpacity={0.8}
       >

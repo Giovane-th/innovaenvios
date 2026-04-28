@@ -9,6 +9,9 @@ import {
 } from "react-native";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
+import { useRouter } from "expo-router";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+import { Alert } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import { cn } from "@/lib/utils";
@@ -46,6 +49,7 @@ interface FormData {
 
 export default function CreateLabelScreen() {
   const colors = useColors();
+  const router = useRouter();
   const [form, setForm] = useState<FormData>({
     senderName: "Minha Empresa LTDA",
     senderCEP: "01310100",
