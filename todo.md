@@ -106,7 +106,9 @@
 
 ## Bugs Conhecidos
 
-(Nenhum registrado no momento)
+- [x] Logo não aparecendo na tela de login (ImageBackground)
+- [x] Implementar botão de cadastro de usuário na tela de login
+- [x] Testar funcionamento offline/online do app
 
 ## Notas
 
