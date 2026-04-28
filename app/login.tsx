@@ -37,14 +37,14 @@ export default function LoginScreen() {
           <View className="items-center pt-12 pb-8">
             <Image
               source={require("@/assets/images/icon.png")}
-              style={{ width: 120, height: 120 }}
+              style={{ width: 140, height: 140 }}
               contentFit="contain"
             />
-            <Text className="text-3xl font-bold text-foreground mt-6 text-center">
+            <Text className="text-2xl font-bold text-primary mt-6 text-center">
               In'Nova Envios
             </Text>
-            <Text className="text-base text-muted mt-2">
-              Gere etiquetas de envio com facilidade
+            <Text className="text-sm text-muted mt-2">
+              Geração de Etiquetas
             </Text>
           </View>
 

@@ -1,8 +1,8 @@
 /** @type {const} */
 const themeColors = {
-  primary: { light: '#0066CC', dark: '#0066CC' }, // Azul In'Nova
-  secondary: { light: '#22B573', dark: '#22B573' }, // Verde In'Nova
-  accent: { light: '#FFD700', dark: '#FFD700' }, // Amarelo/Ouro
+  primary: { light: '#186ABD', dark: '#186ABD' }, // Azul In'Nova
+  secondary: { light: '#3BAA99', dark: '#3BAA99' }, // Verde In'Nova
+  accent: { light: '#6FC971', dark: '#6FC971' }, // Verde claro In'Nova
   background: { light: '#ffffff', dark: '#151718' },
   surface: { light: '#f5f5f5', dark: '#1e2022' },
   foreground: { light: '#11181C', dark: '#ECEDEE' },
