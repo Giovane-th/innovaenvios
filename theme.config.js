@@ -1,6 +1,8 @@
 /** @type {const} */
 const themeColors = {
-  primary: { light: '#0a7ea4', dark: '#0a7ea4' },
+  primary: { light: '#0066CC', dark: '#0066CC' }, // Azul In'Nova
+  secondary: { light: '#22B573', dark: '#22B573' }, // Verde In'Nova
+  accent: { light: '#FFD700', dark: '#FFD700' }, // Amarelo/Ouro
   background: { light: '#ffffff', dark: '#151718' },
   surface: { light: '#f5f5f5', dark: '#1e2022' },
   foreground: { light: '#11181C', dark: '#ECEDEE' },
