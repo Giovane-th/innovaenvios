@@ -116,3 +116,13 @@
 - O token dos Correios expira em 24 horas (conforme documentação)
 - Etiquetas são armazenadas localmente e sincronizadas com histórico
 - O app deve funcionar offline com dados em cache
+
+
+## Importação de Alunos/Clientes
+- [x] Tela de importação de CSV com alunos
+- [x] Validação e parsing de arquivo CSV
+- [x] Banco de dados de alunos (AsyncStorage)
+- [x] Busca rápida de alunos por nome/email
+- [ ] Tela de gerenciamento de alunos (listar, editar, deletar)
+- [ ] Auto-preenchimento na tela de criar etiqueta
+- [x] Sincronização de dados offline
