@@ -136,3 +136,16 @@
 - [x] Impressão de etiqueta com ESC/POS
 - [x] Suporte a impressoras térmicas 80mm e 58mm
 - [x] Botão de impressão na tela de detalhes da etiqueta
+
+
+## Deployment em VPS
+- [x] Criar script de deployment (deploy-vps.sh)
+- [x] Criar guia passo a passo (DEPLOYMENT_GUIDE.md)
+- [ ] Configurar DNS para innovaenvios.app
+- [ ] Executar script na VPS
+- [ ] Clonar repositório GitHub
+- [ ] Configurar variáveis de ambiente
+- [ ] Iniciar aplicação com PM2
+- [ ] Configurar SSL/HTTPS com Certbot
+- [ ] Testar API em produção
+- [ ] Atualizar endpoints do app móvel
