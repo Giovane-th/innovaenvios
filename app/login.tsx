@@ -16,25 +16,38 @@ import { MaterialIcons } from "@expo/vector-icons";
 
 export default function LoginScreen() {
   const colors = useColors();
-  const { login, loading } = useAuth();
+  const { loading } = useAuth();
 
-  const [cartaoPostagem, setCartaoPostagem] = useState("");
-  const [contrato, setContrato] = useState("");
-  const [cnpj, setCNPJ] = useState("");
+  const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleLogin = async () => {
-    if (!cartaoPostagem.trim() || !contrato.trim()) {
-      Alert.alert("Erro", "Preencha o Cartão de Postagem e Contrato");
+    if (!email.trim() || !password.trim()) {
+      Alert.alert("Erro", "Preencha o email e senha");
       return;
     }
 
+    setIsLoading(true);
     try {
-      await login(cartaoPostagem, contrato, cnpj || undefined);
+      // TODO: Integrar com API de autenticação do backend
+      // Por enquanto, simular login bem-sucedido
+      await new Promise((resolve) => setTimeout(resolve, 1500));
+      
+      // Simular sucesso
+      Alert.alert("Sucesso", "Login realizado com sucesso!");
+      
+      // Limpar formulário
+      setEmail("");
+      setPassword("");
     } catch (error) {
       Alert.alert(
         "Erro ao fazer login",
         error instanceof Error ? error.message : "Tente novamente"
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -52,68 +65,66 @@ export default function LoginScreen() {
           <View className="flex-1 justify-end pb-12 px-6">
             {/* Form Section */}
             <View className="gap-4">
-              {/* Cartão de Postagem */}
+              {/* Email */}
               <View>
                 <Text className="text-sm font-semibold text-foreground mb-2">
-                  Cartão de Postagem
+                  Email
                 </Text>
                 <TextInput
-                  placeholder="0076337634"
-                  value={cartaoPostagem}
-                  onChangeText={setCartaoPostagem}
-                  editable={!loading}
+                  placeholder="seu@email.com"
+                  value={email}
+                  onChangeText={setEmail}
+                  editable={!isLoading}
                   placeholderTextColor={colors.muted}
                   className="border border-border rounded-lg px-4 py-3 text-foreground bg-white"
-                  keyboardType="numeric"
+                  keyboardType="email-address"
+                  autoCapitalize="none"
                 />
               </View>
 
-              {/* Contrato */}
+              {/* Senha */}
               <View>
                 <Text className="text-sm font-semibold text-foreground mb-2">
-                  Número do Contrato
+                  Senha
                 </Text>
-                <TextInput
-                  placeholder="9912528344"
-                  value={contrato}
-                  onChangeText={setContrato}
-                  editable={!loading}
-                  placeholderTextColor={colors.muted}
-                  className="border border-border rounded-lg px-4 py-3 text-foreground bg-white"
-                  keyboardType="numeric"
-                />
-              </View>
-
-              {/* CNPJ (Opcional) */}
-              <View>
-                <Text className="text-sm font-semibold text-foreground mb-2">
-                  CNPJ (Opcional)
-                </Text>
-                <TextInput
-                  placeholder="36543139000129"
-                  value={cnpj}
-                  onChangeText={setCNPJ}
-                  editable={!loading}
-                  placeholderTextColor={colors.muted}
-                  className="border border-border rounded-lg px-4 py-3 text-foreground bg-white"
-                  keyboardType="numeric"
-                />
+                <View className="flex-row items-center border border-border rounded-lg bg-white px-4">
+                  <TextInput
+                    placeholder="••••••••"
+                    value={password}
+                    onChangeText={setPassword}
+                    editable={!isLoading}
+                    placeholderTextColor={colors.muted}
+                    className="flex-1 py-3 text-foreground"
+                    secureTextEntry={!showPassword}
+                    autoCapitalize="none"
+                  />
+                  <TouchableOpacity
+                    onPress={() => setShowPassword(!showPassword)}
+                    activeOpacity={0.7}
+                  >
+                    <MaterialIcons
+                      name={showPassword ? "visibility" : "visibility-off"}
+                      size={20}
+                      color={colors.muted}
+                    />
+                  </TouchableOpacity>
+                </View>
               </View>
 
               {/* Login Button */}
               <TouchableOpacity
                 onPress={handleLogin}
-                disabled={loading}
+                disabled={isLoading}
                 className="bg-primary rounded-lg py-4 flex-row items-center justify-center gap-2 mt-4"
                 activeOpacity={0.7}
               >
-                {loading ? (
+                {isLoading ? (
                   <ActivityIndicator color="white" size="small" />
                 ) : (
                   <MaterialIcons name="login" size={20} color="white" />
                 )}
                 <Text className="text-white font-semibold text-base">
-                  {loading ? "Entrando..." : "Entrar"}
+                  {isLoading ? "Entrando..." : "Entrar"}
                 </Text>
               </TouchableOpacity>
             </View>
