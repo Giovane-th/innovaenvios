@@ -91,10 +91,19 @@ export class CorreiosAPIClient {
       const response = await this.client.post<TokenResponse>(
         "/token",
         {
-          cartaoPostagem,
-          senha,
+          cartaoPostagem: cartaoPostagem.trim(),
+          senha: senha.trim(),
+        },
+        {
+          headers: {
+            "Content-Type": "application/json",
+          },
         }
       );
+
+      if (!response.data || !response.data.token) {
+        throw new Error("Resposta inválida da API: token não encontrado");
+      }
 
       this.token = response.data.token;
       this.tokenExpiration = new Date(response.data.expiraEm);

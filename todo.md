@@ -66,19 +66,27 @@
 - [ ] Testes de acessibilidade (contraste, labels)
 
 ### Integração com Correios API
-- [ ] Documentação da API SIGEP Web
-- [ ] Implementar autenticação com token
-- [ ] Endpoint de geração de pré-postagem
-- [ ] Endpoint de busca de CEP
+- [x] Documentação da API SIGEP Web
+- [x] Implementar autenticação com token
+- [x] Endpoint de geração de pré-postagem
+- [x] Endpoint de busca de CEP
 - [ ] Endpoint de consulta de agências
 - [ ] Endpoint de cálculo de prazo e preço
 - [ ] Tratamento de erros da API
 - [ ] Retry logic para falhas de rede
 
+### Configuração de Impressoras
+- [x] Tela de configuração de impressoras
+- [x] Adicionar impressora (IP e porta)
+- [x] Definir impressora padrão
+- [ ] Testar conexão com impressora
+- [x] Remover impressora
+- [x] Armazenamento local de configuração
+
 ### Armazenamento e Persistência
 - [ ] AsyncStorage para histórico de envios
 - [ ] AsyncStorage para preferências do usuário
-- [ ] SecureStore para credenciais
+- [x] SecureStore para credenciais
 - [ ] Limpeza de dados ao fazer logout
 - [ ] Migração de dados se necessário
 
