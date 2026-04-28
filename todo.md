@@ -127,3 +127,12 @@
 - [x] Auto-preenchimento na tela de criar etiqueta
 - [x] Sincronização de dados offline
 - [x] Botão de novo cliente na tela de criar etiqueta
+
+
+## Impressão Térmica
+- [x] Descoberta de impressoras na rede Wi-Fi
+- [x] Seleção de impressora padrão
+- [x] Teste de conexão com impressora
+- [x] Impressão de etiqueta com ESC/POS
+- [x] Suporte a impressoras térmicas 80mm e 58mm
+- [x] Botão de impressão na tela de detalhes da etiqueta

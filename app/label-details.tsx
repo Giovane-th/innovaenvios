@@ -5,12 +5,14 @@ import {
   TouchableOpacity,
   Share,
   Alert,
+  ActivityIndicator,
 } from "react-native";
 import { useState } from "react";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
+import { useThermalPrinter } from "@/hooks/use-thermal-printer";
 
 interface LabelDetails {
   trackingCode: string;
@@ -54,7 +56,9 @@ const MOCK_LABEL: LabelDetails = {
 
 export default function LabelDetailsScreen() {
   const colors = useColors();
+  const { printLabel, defaultPrinter, loadPrinters } = useThermalPrinter();
   const [copied, setCopied] = useState(false);
+  const [isPrinting, setIsPrinting] = useState(false);
 
   const handleCopyCode = async () => {
     await Clipboard.setStringAsync(MOCK_LABEL.trackingCode);
@@ -73,9 +77,33 @@ export default function LabelDetailsScreen() {
     }
   };
 
-  const handlePrint = () => {
-    Alert.alert("Impressão", "Enviando para impressora...");
-    // TODO: Integrar com Print API
+  const handlePrint = async () => {
+    if (!defaultPrinter) {
+      Alert.alert(
+        "Aviso",
+        "Nenhuma impressora configurada. Configure uma impressora nas configurações.",
+        [{ text: "OK", style: "default" }]
+      );
+      return;
+    }
+
+    setIsPrinting(true);
+    try {
+      await loadPrinters();
+      const success = await printLabel({
+        recipientName: MOCK_LABEL.recipient.name,
+        recipientAddress: MOCK_LABEL.recipient.address,
+        recipientNumber: "500",
+        recipientCity: MOCK_LABEL.recipient.city,
+        recipientState: MOCK_LABEL.recipient.state,
+        recipientCEP: "20000-000",
+        trackingCode: MOCK_LABEL.trackingCode,
+      });
+    } catch (error) {
+      console.error("Erro ao imprimir:", error);
+    } finally {
+      setIsPrinting(false);
+    }
   };
 
   return (
@@ -247,11 +275,23 @@ export default function LabelDetailsScreen() {
         <View className="flex-row gap-3 mb-8">
           <TouchableOpacity
             onPress={handlePrint}
-            className="flex-1 py-3 rounded-lg bg-primary flex-row items-center justify-center gap-2"
+            disabled={isPrinting}
+            className={`flex-1 py-3 rounded-lg flex-row items-center justify-center gap-2 ${
+              isPrinting ? "bg-primary opacity-70" : "bg-primary"
+            }`}
             activeOpacity={0.7}
           >
-            <MaterialIcons name="print" size={20} color="white" />
-            <Text className="text-white font-semibold">Imprimir</Text>
+            {isPrinting ? (
+              <>
+                <ActivityIndicator color="white" size="small" />
+                <Text className="text-white font-semibold">Imprimindo...</Text>
+              </>
+            ) : (
+              <>
+                <MaterialIcons name="print" size={20} color="white" />
+                <Text className="text-white font-semibold">Imprimir</Text>
+              </>
+            )}
           </TouchableOpacity>
 
           <TouchableOpacity
