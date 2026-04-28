@@ -3,6 +3,7 @@ import { useState } from "react";
 import { Image } from "expo-image";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
+import { useCorreiosAuth } from "@/hooks/use-correios-auth";
 import { cn } from "@/lib/utils";
 
 export default function LoginScreen() {
@@ -10,28 +11,21 @@ export default function LoginScreen() {
   const [cartao, setCartao] = useState("");
   const [contrato, setContrato] = useState("");
   const [senha, setSenha] = useState("");
-  const [loading, setLoading] = useState(false);
-  const [error, setError] = useState("");
+  const [cnpj, setCNPJ] = useState("");
+  const { login, loading, error } = useCorreiosAuth();
 
   const handleLogin = async () => {
-    setError("");
-    
     if (!cartao.trim() || !contrato.trim() || !senha.trim()) {
-      setError("Por favor, preencha todos os campos");
       return;
     }
 
-    setLoading(true);
     try {
-      // TODO: Integrar com API de autenticação dos Correios
-      console.log("Login attempt:", { cartao, contrato, senha });
-      // Simular delay de rede
-      await new Promise(resolve => setTimeout(resolve, 1000));
+      await login(cartao, contrato, senha, cnpj || undefined);
       // Após sucesso, redirecionar para Home
+      // TODO: Implementar navegação para Home
     } catch (err) {
-      setError("Erro ao fazer login. Tente novamente.");
-    } finally {
-      setLoading(false);
+      // Erro já é tratado pelo hook
+      console.error("Login error:", err);
     }
   };
 
@@ -88,6 +82,22 @@ export default function LoginScreen() {
               />
             </View>
 
+            {/* CNPJ (Opcional) */}
+            <View>
+              <Text className="text-sm font-semibold text-foreground mb-2">
+                CNPJ (Opcional)
+              </Text>
+              <TextInput
+                placeholder="00000000000000"
+                value={cnpj}
+                onChangeText={setCNPJ}
+                editable={!loading}
+                placeholderTextColor={colors.muted}
+                className="border border-border rounded-lg px-4 py-3 text-foreground bg-surface"
+                keyboardType="number-pad"
+              />
+            </View>
+
             {/* Senha de Componente */}
             <View>
               <Text className="text-sm font-semibold text-foreground mb-2">
@@ -114,10 +124,12 @@ export default function LoginScreen() {
             {/* Login Button */}
             <TouchableOpacity
               onPress={handleLogin}
-              disabled={loading}
+              disabled={loading || !cartao.trim() || !contrato.trim() || !senha.trim()}
               className={cn(
                 "rounded-lg py-3 flex-row items-center justify-center gap-2",
-                loading ? "bg-primary opacity-70" : "bg-primary"
+                loading || !cartao.trim() || !contrato.trim() || !senha.trim()
+                  ? "bg-primary opacity-70"
+                  : "bg-primary"
               )}
             >
               {loading ? (
