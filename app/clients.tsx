@@ -14,6 +14,8 @@ import { ScreenContainer } from '@/components/screen-container';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useClients } from '@/hooks/use-clients';
+import { useCEPLookup } from '@/hooks/use-cep-lookup';
+import { useClientReport } from '@/hooks/use-client-report';
 
 export default function ClientsScreen() {
   const router = useRouter();
@@ -33,6 +35,8 @@ export default function ClientsScreen() {
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
   const [importing, setImporting] = useState(false);
+  const { lookupCEP, loading: cepLoading } = useCEPLookup();
+  const { generateCSVReport, generateHTMLReport } = useClientReport();
 
   // Formulário de novo cliente
   const [formData, setFormData] = useState({
@@ -128,6 +132,50 @@ export default function ClientsScreen() {
     );
   };
 
+  const handleExportReport = () => {
+    Alert.alert(
+      'Exportar Relatório',
+      'Escolha o formato:',
+      [
+        {
+          text: 'CSV',
+          onPress: () => {
+            const csv = generateCSVReport(clients, 'Relatório de Clientes - In'Nova Envios');
+            // Criar blob e download
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `clientes_${new Date().toISOString().split('T')[0]}.csv`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            Alert.alert('Sucesso', 'Relatório exportado com sucesso!');
+          },
+        },
+        {
+          text: 'HTML (Impressão)',
+          onPress: () => {
+            const html = generateHTMLReport(clients, 'Relatório de Clientes - In'Nova Envios');
+            const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
+            const link = document.createElement('a');
+            const url = URL.createObjectURL(blob);
+            link.setAttribute('href', url);
+            link.setAttribute('download', `clientes_${new Date().toISOString().split('T')[0]}.html`);
+            link.style.visibility = 'hidden';
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+            Alert.alert('Sucesso', 'Relatório gerado! Abra o arquivo para imprimir.');
+          },
+        },
+        { text: 'Cancelar', onPress: () => {} },
+      ]
+    );
+  };
+
+
   return (
     <ScreenContainer className="bg-gray-50">
       <FlatList
@@ -204,6 +252,13 @@ export default function ClientsScreen() {
               </View>
 
               <View className="flex-row gap-2">
+                <TouchableOpacity
+                  onPress={handleExportReport}
+                  className="bg-purple-600 rounded-lg p-3"
+                >
+                  <MaterialIcons name="file-download" size={20} color="white" />
+                </TouchableOpacity>
+
                 <TouchableOpacity
                   onPress={() => setShowImportModal(true)}
                   className="bg-green-600 rounded-lg p-3"
@@ -451,22 +506,61 @@ export default function ClientsScreen() {
               <Text className="text-sm font-semibold text-gray-600 mb-2">
                 CEP
               </Text>
-              <TextInput
-                placeholder="00.000-000"
-                value={formData.cep}
-                onChangeText={(text) =>
-                  setFormData({ ...formData, cep: text })
-                }
-                style={{
-                  borderWidth: 1,
-                  borderColor: '#e5e7eb',
-                  borderRadius: 8,
-                  paddingHorizontal: 12,
-                  paddingVertical: 10,
-                  marginBottom: 16,
-                  fontSize: 16,
-                }}
-              />
+              <View style={{ flexDirection: 'row', gap: 8, marginBottom: 16 }}>
+                <TextInput
+                  placeholder="00.000-000"
+                  value={formData.cep}
+                  onChangeText={(text) =>
+                    setFormData({ ...formData, cep: text })
+                  }
+                  style={{
+                    flex: 1,
+                    borderWidth: 1,
+                    borderColor: '#e5e7eb',
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    fontSize: 16,
+                  }}
+                />
+                <TouchableOpacity
+                  onPress={async () => {
+                    if (formData.cep.length >= 8) {
+                      const result = await lookupCEP(formData.cep);
+                      if (result.success && result.data) {
+                        setFormData({
+                          ...formData,
+                          endereco: result.data.endereco,
+                          complemento: result.data.complemento,
+                          bairro: result.data.bairro,
+                          cidade: result.data.cidade,
+                          uf: result.data.uf,
+                        });
+                        Alert.alert('Sucesso', 'Endereço preenchido automaticamente!');
+                      } else {
+                        Alert.alert('Erro', result.error || 'CEP não encontrado');
+                      }
+                    } else {
+                      Alert.alert('Erro', 'Digite um CEP válido');
+                    }
+                  }}
+                  disabled={cepLoading}
+                  style={{
+                    backgroundColor: cepLoading ? '#9ca3af' : '#2563eb',
+                    borderRadius: 8,
+                    paddingHorizontal: 12,
+                    paddingVertical: 10,
+                    justifyContent: 'center',
+                    alignItems: 'center',
+                  }}
+                >
+                  {cepLoading ? (
+                    <ActivityIndicator color="white" size="small" />
+                  ) : (
+                    <MaterialIcons name="search" size={20} color="white" />
+                  )}
+                </TouchableOpacity>
+              </View>
 
               {/* Cidade */}
               <Text className="text-sm font-semibold text-gray-600 mb-2">
