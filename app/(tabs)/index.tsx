@@ -13,6 +13,7 @@ import { useColors } from "@/hooks/use-colors";
 import { useAuth } from "@/lib/auth-context";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { FreightSimulatorModal } from "@/components/freight-simulator-modal";
 
 interface ShippingItem {
   id: string;
@@ -28,6 +29,7 @@ export default function HomeScreen() {
   const { employee, logout } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [shippings, setShippings] = useState<ShippingItem[]>([]);
+  const [showFreightSimulator, setShowFreightSimulator] = useState(false);
 
   useEffect(() => {
     loadShippings();
@@ -198,7 +200,7 @@ export default function HomeScreen() {
         contentContainerStyle={{ paddingHorizontal: 24, paddingTop: 24, paddingBottom: 100 }}
       />
 
-      {/* Floating Action Button */}
+      {/* Floating Action Buttons */}
       <TouchableOpacity
         onPress={handleCreateLabel}
         className="absolute bottom-24 right-6 w-16 h-16 rounded-full bg-primary items-center justify-center shadow-lg"
@@ -206,6 +208,20 @@ export default function HomeScreen() {
       >
         <MaterialIcons name="add" size={28} color="white" />
       </TouchableOpacity>
+
+      <TouchableOpacity
+        onPress={() => setShowFreightSimulator(true)}
+        className="absolute bottom-40 right-6 w-14 h-14 rounded-full bg-blue-600 items-center justify-center shadow-lg"
+        activeOpacity={0.8}
+      >
+        <MaterialIcons name="calculate" size={24} color="white" />
+      </TouchableOpacity>
+
+      {/* Freight Simulator Modal */}
+      <FreightSimulatorModal
+        visible={showFreightSimulator}
+        onClose={() => setShowFreightSimulator(false)}
+      />
     </ScreenContainer>
   );
 }
