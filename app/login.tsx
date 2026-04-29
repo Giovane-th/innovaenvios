@@ -94,28 +94,9 @@ export default function LoginScreen() {
     }
   };
 
-  // Bloquear acesso se não for via innovaenvios.app
+  // Permitir acesso em qualquer domínio (desenvolvimento e produção)
   useEffect(() => {
-    if (typeof window !== 'undefined') {
-      const hostname = window.location.hostname;
-      const isDevelopment = hostname.includes('8081') || hostname.includes('localhost');
-      if (isDevelopment) {
-        Alert.alert(
-          'Acesso Restrito',
-          'Este app deve ser acessado apenas via https://innovaenvios.app',
-          [
-            {
-              text: 'OK',
-              onPress: () => {
-                if (typeof window !== 'undefined') {
-                  window.location.href = 'https://innovaenvios.app';
-                }
-              },
-            },
-          ]
-        );
-      }
-    }
+    // Sem restrições
   }, []);
 
   return (
@@ -172,6 +153,7 @@ export default function LoginScreen() {
                       editable={!isLoading}
                       placeholderTextColor={colors.muted}
                       className="flex-1 py-3 text-foreground"
+                      style={{ color: '#000000' }}
                       secureTextEntry={!showPassword}
                       autoCapitalize="none"
                     />
