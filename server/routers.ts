@@ -5,6 +5,7 @@ import { systemRouter } from "./_core/systemRouter";
 import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import * as correios from "./correios.js";
 import * as db from "./db.js";
+import * as authDb from "./auth-db.js";
 
 export const appRouter = router({
   system: systemRouter,
@@ -17,6 +18,52 @@ export const appRouter = router({
         success: true,
       } as const;
     }),
+
+    loginAppUser: publicProcedure
+      .input(
+        z.object({
+          email: z.string().email(),
+          password: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return authDb.loginAppUser(input.email, input.password);
+      }),
+
+    registerAppUser: publicProcedure
+      .input(
+        z.object({
+          name: z.string(),
+          email: z.string().email(),
+          password: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return authDb.registerAppUser(input.name, input.email, input.password);
+      }),
+
+    listAppUsers: protectedProcedure.query(async () => {
+      return authDb.listAppUsers();
+    }),
+
+    createAppUser: protectedProcedure
+      .input(
+        z.object({
+          name: z.string(),
+          email: z.string().email(),
+          password: z.string(),
+          role: z.enum(['user', 'admin']).optional(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        return authDb.createAppUser(input.name, input.email, input.password, input.role);
+      }),
+
+    deleteAppUser: protectedProcedure
+      .input(z.object({ userId: z.number() }))
+      .mutation(async ({ input }) => {
+        return authDb.deleteAppUser(input.userId);
+      }),
 
   }),
 
