@@ -15,6 +15,13 @@
       "when": 1777358430202,
       "tag": "0001_past_electro",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "5",
+      "when": 1777487542474,
+      "tag": "0002_majestic_may_parker",
+      "breakpoints": true
     }
   ]
 }

@@ -1,6 +1,6 @@
-import { eq } from "drizzle-orm";
+import { eq, like, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users } from "../drizzle/schema";
+import { InsertUser, users, clients, InsertClient, Client, shippingLabels, InsertShippingLabel, ShippingLabel } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -89,4 +89,203 @@ export async function getUserByOpenId(openId: string) {
   return result.length > 0 ? result[0] : undefined;
 }
 
-// TODO: add feature queries here as your schema grows.
+// ===== CLIENTES =====
+
+export async function createClient(data: InsertClient): Promise<Client | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create client: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.insert(clients).values(data);
+    const newClient = await db.select().from(clients).where(eq(clients.id, Number((result as any).insertId))).limit(1);
+    return newClient.length > 0 ? newClient[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to create client:", error);
+    throw error;
+  }
+}
+
+export async function getClients(limit?: number, offset?: number): Promise<Client[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get clients: database not available");
+    return [];
+  }
+
+  try {
+    let query: any = db.select().from(clients);
+    if (limit) {
+      query = query.limit(limit);
+    }
+    if (offset) {
+      query = query.offset(offset);
+    }
+    return await query;
+  } catch (error) {
+    console.error("[Database] Failed to get clients:", error);
+    return [];
+  }
+}
+
+export async function searchClients(query: string): Promise<Client[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot search clients: database not available");
+    return [];
+  }
+
+  try {
+    const searchTerm = `%${query}%`;
+    const results: any = await db
+      .select()
+      .from(clients)
+      .where(
+        and(
+          like(clients.nome, searchTerm),
+          like(clients.email, searchTerm),
+          like(clients.cpf_cnpj, searchTerm),
+          like(clients.cidade, searchTerm)
+        )
+      );
+    return results;
+  } catch (error) {
+    console.error("[Database] Failed to search clients:", error);
+    return [];
+  }
+}
+
+export async function getClientById(id: number): Promise<Client | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get client: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.select().from(clients).where(eq(clients.id, id)).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to get client:", error);
+    return null;
+  }
+}
+
+export async function updateClient(id: number, data: Partial<InsertClient>): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update client: database not available");
+    return;
+  }
+
+  try {
+    await db.update(clients).set({ ...data, updatedAt: new Date() }).where(eq(clients.id, id));
+  } catch (error) {
+    console.error("[Database] Failed to update client:", error);
+    throw error;
+  }
+}
+
+export async function deleteClient(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete client: database not available");
+    return;
+  }
+
+  try {
+    await db.delete(clients).where(eq(clients.id, id));
+  } catch (error) {
+    console.error("[Database] Failed to delete client:", error);
+    throw error;
+  }
+}
+
+// ===== ETIQUETAS DE ENVIO =====
+
+export async function createShippingLabel(data: InsertShippingLabel): Promise<ShippingLabel | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create shipping label: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.insert(shippingLabels).values(data);
+    const newLabel = await db.select().from(shippingLabels).where(eq(shippingLabels.id, Number((result as any).insertId))).limit(1);
+    return newLabel.length > 0 ? newLabel[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to create shipping label:", error);
+    throw error;
+  }
+}
+
+export async function getShippingLabels(limit?: number, offset?: number): Promise<ShippingLabel[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get shipping labels: database not available");
+    return [];
+  }
+
+  try {
+    let query: any = db.select().from(shippingLabels);
+    if (limit) {
+      query = query.limit(limit);
+    }
+    if (offset) {
+      query = query.offset(offset);
+    }
+    return await query;
+  } catch (error) {
+    console.error("[Database] Failed to get shipping labels:", error);
+    return [];
+  }
+}
+
+export async function getShippingLabelByCode(code: string): Promise<ShippingLabel | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get shipping label: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.select().from(shippingLabels).where(eq(shippingLabels.code, code)).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to get shipping label:", error);
+    return null;
+  }
+}
+
+export async function updateShippingLabel(id: number, data: Partial<InsertShippingLabel>): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update shipping label: database not available");
+    return;
+  }
+
+  try {
+    await db.update(shippingLabels).set({ ...data, updatedAt: new Date() }).where(eq(shippingLabels.id, id));
+  } catch (error) {
+    console.error("[Database] Failed to update shipping label:", error);
+    throw error;
+  }
+}
+
+export async function deleteShippingLabel(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete shipping label: database not available");
+    return;
+  }
+
+  try {
+    await db.delete(shippingLabels).where(eq(shippingLabels.id, id));
+  } catch (error) {
+    console.error("[Database] Failed to delete shipping label:", error);
+    throw error;
+  }
+}

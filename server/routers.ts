@@ -2,8 +2,9 @@ import { z } from "zod";
 import { COOKIE_NAME } from "../shared/const.js";
 import { getSessionCookieOptions } from "./_core/cookies";
 import { systemRouter } from "./_core/systemRouter";
-import { publicProcedure, router } from "./_core/trpc";
+import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import * as correios from "./correios.js";
+import * as db from "./db.js";
 
 export const appRouter = router({
   system: systemRouter,
@@ -106,6 +107,130 @@ export const appRouter = router({
             `Erro ao gerar etiqueta: ${error instanceof Error ? error.message : String(error)}`
           );
         }
+      }),
+  }),
+
+  clients: router({
+    list: publicProcedure
+      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        return await db.getClients(input?.limit, input?.offset);
+      }),
+
+    search: publicProcedure
+      .input(z.object({ query: z.string() }))
+      .query(async ({ input }) => {
+        return await db.searchClients(input.query);
+      }),
+
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getClientById(input.id);
+      }),
+
+    create: publicProcedure
+      .input(z.object({
+        nome: z.string(),
+        email: z.string().optional(),
+        cpf_cnpj: z.string().optional(),
+        telefone: z.string().optional(),
+        celular: z.string().optional(),
+        endereco: z.string().optional(),
+        numero: z.string().optional(),
+        complemento: z.string().optional(),
+        cidade: z.string().optional(),
+        uf: z.string().optional(),
+        bairro: z.string().optional(),
+        cep: z.string().optional(),
+        ponto_referencia: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createClient(input);
+      }),
+
+    update: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        nome: z.string().optional(),
+        email: z.string().optional(),
+        cpf_cnpj: z.string().optional(),
+        telefone: z.string().optional(),
+        celular: z.string().optional(),
+        endereco: z.string().optional(),
+        numero: z.string().optional(),
+        complemento: z.string().optional(),
+        cidade: z.string().optional(),
+        uf: z.string().optional(),
+        bairro: z.string().optional(),
+        cep: z.string().optional(),
+        ponto_referencia: z.string().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateClient(id, data);
+        return await db.getClientById(id);
+      }),
+
+    delete: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteClient(input.id);
+        return { success: true };
+      }),
+  }),
+
+  shippingLabels: router({
+    list: publicProcedure
+      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        return await db.getShippingLabels(input?.limit, input?.offset);
+      }),
+
+    getByCode: publicProcedure
+      .input(z.object({ code: z.string() }))
+      .query(async ({ input }) => {
+        return await db.getShippingLabelByCode(input.code);
+      }),
+
+    create: publicProcedure
+      .input(z.object({
+        code: z.string(),
+        clientId: z.number().optional(),
+        recipient: z.string(),
+        email: z.string().optional(),
+        phone: z.string().optional(),
+        address: z.string(),
+        number: z.string(),
+        complement: z.string().optional(),
+        city: z.string(),
+        state: z.string(),
+        neighborhood: z.string().optional(),
+        zipcode: z.string(),
+        reference_point: z.string().optional(),
+        status: z.enum(["Gerada", "Postada", "Em trânsito", "Entregue"]).optional(),
+        created_by: z.number(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createShippingLabel(input);
+      }),
+
+    update: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        status: z.enum(["Gerada", "Postada", "Em trânsito", "Entregue"]).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateShippingLabel(id, data);
+        return await db.getShippingLabelByCode("");
+      }),
+
+    delete: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteShippingLabel(input.id);
+        return { success: true };
       }),
   }),
 });

@@ -1,0 +1,42 @@
+CREATE TABLE `clients` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`nome` varchar(255) NOT NULL,
+	`email` varchar(320),
+	`cpf_cnpj` varchar(20),
+	`telefone` varchar(20),
+	`celular` varchar(20),
+	`endereco` varchar(255),
+	`numero` varchar(20),
+	`complemento` varchar(255),
+	`cidade` varchar(100),
+	`uf` varchar(2),
+	`bairro` varchar(100),
+	`cep` varchar(10),
+	`ponto_referencia` text,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `clients_id` PRIMARY KEY(`id`)
+);
+--> statement-breakpoint
+CREATE TABLE `shipping_labels` (
+	`id` int AUTO_INCREMENT NOT NULL,
+	`code` varchar(50) NOT NULL,
+	`clientId` int,
+	`recipient` varchar(255) NOT NULL,
+	`email` varchar(320),
+	`phone` varchar(20),
+	`address` varchar(255) NOT NULL,
+	`number` varchar(20) NOT NULL,
+	`complement` varchar(255),
+	`city` varchar(100) NOT NULL,
+	`state` varchar(2) NOT NULL,
+	`neighborhood` varchar(100),
+	`zipcode` varchar(10) NOT NULL,
+	`reference_point` text,
+	`status` enum('Gerada','Postada','Em trânsito','Entregue') NOT NULL DEFAULT 'Gerada',
+	`created_by` int NOT NULL,
+	`createdAt` timestamp NOT NULL DEFAULT (now()),
+	`updatedAt` timestamp NOT NULL DEFAULT (now()) ON UPDATE CURRENT_TIMESTAMP,
+	CONSTRAINT `shipping_labels_id` PRIMARY KEY(`id`),
+	CONSTRAINT `shipping_labels_code_unique` UNIQUE(`code`)
+);
