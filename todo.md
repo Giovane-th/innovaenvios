@@ -149,3 +149,14 @@
 - [ ] Configurar SSL/HTTPS com Certbot
 - [ ] Testar API em produção
 - [ ] Atualizar endpoints do app móvel
+
+## Fase de Implantação no VPS - Web
+
+- [ ] Gerar build web do Expo para produção
+- [ ] Configurar Nginx para servir frontend web em innovaenvios.app
+- [ ] Proxy de requisições API para porta 3002
+- [ ] Corrigir fluxo de login/logout para web
+- [ ] Testar acesso via innovaenvios.app
+- [ ] Validar autenticação (login/logout)
+- [ ] Testar integração com Correios
+- [ ] Validar suporte a impressora USB
