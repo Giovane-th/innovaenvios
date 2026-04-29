@@ -43,13 +43,13 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadStoredData = async () => {
     try {
-      // Carregar funcionário logado
-      const storedEmployee = await SecureStore.getItemAsync('auth_employee');
-      if (storedEmployee) {
-        const emp = JSON.parse(storedEmployee);
-        setEmployee(emp);
-        setIsAuthenticated(true);
-      }
+      // Não fazer auto-login - sempre mostrar tela de login
+      // const storedEmployee = await SecureStore.getItemAsync('auth_employee');
+      // if (storedEmployee) {
+      //   const emp = JSON.parse(storedEmployee);
+      //   setEmployee(emp);
+      //   setIsAuthenticated(true);
+      // }
 
       // Carregar lista de funcionários
       const storedEmployees = await AsyncStorage.getItem('employees_list');
@@ -64,6 +64,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
           role: 'admin',
           createdAt: new Date().toISOString(),
         };
+        // Salvar senha padrão (123456)
+        await SecureStore.setItemAsync(`pwd_${defaultAdmin.id}`, '123456');
         setEmployees([defaultAdmin]);
         await AsyncStorage.setItem('employees_list', JSON.stringify([defaultAdmin]));
       }
