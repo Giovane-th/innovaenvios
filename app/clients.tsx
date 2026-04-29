@@ -140,7 +140,7 @@ export default function ClientsScreen() {
         {
           text: 'CSV',
           onPress: () => {
-            const csv = generateCSVReport(clients, 'Relatório de Clientes - In'Nova Envios');
+            const csv = generateCSVReport(clients, 'Relatório de Clientes - In\'Nova Envios');
             // Criar blob e download
             const blob = new Blob([csv], { type: 'text/csv;charset=utf-8;' });
             const link = document.createElement('a');
@@ -157,7 +157,7 @@ export default function ClientsScreen() {
         {
           text: 'HTML (Impressão)',
           onPress: () => {
-            const html = generateHTMLReport(clients, 'Relatório de Clientes - In'Nova Envios');
+            const html = generateHTMLReport(clients, 'Relatório de Clientes - In\'Nova Envios');
             const blob = new Blob([html], { type: 'text/html;charset=utf-8;' });
             const link = document.createElement('a');
             const url = URL.createObjectURL(blob);
