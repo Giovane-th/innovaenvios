@@ -1,7 +1,8 @@
-import { createContext, useContext, useState, useEffect } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import * as SecureStore from 'expo-secure-store';
 import { Platform } from 'react-native';
+import { useRouter } from 'expo-router';
 
 export interface Employee {
   id: string;
@@ -152,6 +153,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       await SecureStore.deleteItemAsync('auth_employee');
       setEmployee(null);
       setIsAuthenticated(false);
+      // Limpar dados de navegação para forçar retorno à tela de login
+      await AsyncStorage.removeItem('current_route');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
     } finally {
