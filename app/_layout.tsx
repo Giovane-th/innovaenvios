@@ -18,7 +18,7 @@ import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
-import { AuthProvider, useAuth } from "@/lib/auth-context";
+import { AuthProvider, useAuth } from "@/lib/auth-context-v2";
 import { ActivityIndicator, View } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 
@@ -49,6 +49,7 @@ function RootLayoutContent() {
           <Stack.Screen name="create-label" options={{ presentation: "modal" }} />
           <Stack.Screen name="label-details" options={{ presentation: "modal" }} />
           <Stack.Screen name="settings-printer" options={{ presentation: "modal" }} />
+          <Stack.Screen name="settings" options={{ presentation: "modal" }} />
         </>
       ) : (
         <Stack.Screen name="login" />

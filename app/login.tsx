@@ -8,15 +8,17 @@ import {
   Alert,
   Image,
 } from "react-native";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { MaterialIcons } from "@expo/vector-icons";
+import { useAuth } from "@/lib/auth-context-v2";
 
 export default function LoginScreen() {
   const colors = useColors();
   const router = useRouter();
+  const { login, register } = useAuth();
 
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -36,15 +38,12 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      // TODO: Integrar com API de autenticação do backend
-      // Por enquanto, simular login bem-sucedido
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      Alert.alert("Sucesso", "Login realizado com sucesso!");
-
-      // Limpar formulário
-      setEmail("");
-      setPassword("");
+      const result = await login(email, password);
+      if (result.success) {
+        router.replace("/(tabs)");
+      } else {
+        Alert.alert("Erro", result.error || "Erro ao fazer login");
+      }
     } catch (error) {
       Alert.alert(
         "Erro ao fazer login",
@@ -78,18 +77,13 @@ export default function LoginScreen() {
 
     setIsLoading(true);
     try {
-      // TODO: Integrar com API de cadastro do backend
-      // Por enquanto, simular cadastro bem-sucedido
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-
-      Alert.alert("Sucesso", "Usuário cadastrado com sucesso! Faça login agora.");
-
-      // Limpar formulário e voltar ao login
-      setSignUpName("");
-      setSignUpEmail("");
-      setSignUpPassword("");
-      setSignUpConfirmPassword("");
-      setIsSignUp(false);
+      const result = await register(signUpName, signUpEmail, signUpPassword);
+      if (result.success) {
+        Alert.alert("Sucesso", "Cadastro realizado com sucesso!");
+        router.replace("/(tabs)");
+      } else {
+        Alert.alert("Erro", result.error || "Erro ao cadastrar");
+      }
     } catch (error) {
       Alert.alert(
         "Erro ao cadastrar",
@@ -99,6 +93,30 @@ export default function LoginScreen() {
       setIsLoading(false);
     }
   };
+
+  // Bloquear acesso se não for via innovaenvios.app
+  useEffect(() => {
+    if (typeof window !== 'undefined') {
+      const hostname = window.location.hostname;
+      const isDevelopment = hostname.includes('8081') || hostname.includes('localhost');
+      if (isDevelopment) {
+        Alert.alert(
+          'Acesso Restrito',
+          'Este app deve ser acessado apenas via https://innovaenvios.app',
+          [
+            {
+              text: 'OK',
+              onPress: () => {
+                if (typeof window !== 'undefined') {
+                  window.location.href = 'https://innovaenvios.app';
+                }
+              },
+            },
+          ]
+        );
+      }
+    }
+  }, []);
 
   return (
     <ScreenContainer containerClassName="bg-white">
@@ -174,7 +192,7 @@ export default function LoginScreen() {
                 <TouchableOpacity
                   onPress={handleLogin}
                   disabled={isLoading}
-                  className="bg-primary rounded-lg py-4 flex-row items-center justify-center gap-2 mt-2"
+                  className={`bg-primary rounded-lg py-4 flex-row items-center justify-center gap-2 mt-2 ${isLoading ? 'opacity-70' : ''}`}
                   activeOpacity={0.7}
                 >
                   {isLoading ? (
@@ -274,7 +292,7 @@ export default function LoginScreen() {
                 <TouchableOpacity
                   onPress={handleSignUp}
                   disabled={isLoading}
-                  className="bg-primary rounded-lg py-4 flex-row items-center justify-center gap-2 mt-2"
+                  className={`bg-primary rounded-lg py-4 flex-row items-center justify-center gap-2 mt-2 ${isLoading ? 'opacity-70' : ''}`}
                   activeOpacity={0.7}
                 >
                   {isLoading ? (
