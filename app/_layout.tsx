@@ -18,7 +18,7 @@ import type { EdgeInsets, Metrics, Rect } from "react-native-safe-area-context";
 
 import { trpc, createTRPCClient } from "@/lib/trpc";
 import { initManusRuntime, subscribeSafeAreaInsets } from "@/lib/_core/manus-runtime";
-import { AuthProvider, useAuth } from "@/lib/auth-context-v2";
+import { AuthProvider, useAuth } from "@/lib/auth-context";
 import { ActivityIndicator, View } from "react-native";
 import { useColors } from "@/hooks/use-colors";
 

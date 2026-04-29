@@ -1,6 +1,6 @@
 import { useState, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { useAuth } from '@/lib/auth-context-v2';
+import { useAuth } from '@/lib/auth-context';
 
 export interface LabelRecord {
   id: string;

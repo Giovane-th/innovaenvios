@@ -13,7 +13,7 @@ import { useRouter } from "expo-router";
 import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { MaterialIcons } from "@expo/vector-icons";
-import { useAuth } from "@/lib/auth-context-v2";
+import { useAuth } from "@/lib/auth-context";
 
 export default function LoginScreen() {
   const colors = useColors();

@@ -25,7 +25,7 @@ interface ShippingItem {
 export default function HomeScreen() {
   const colors = useColors();
   const router = useRouter();
-  const { user, logout } = useAuth();
+  const { employee, logout } = useAuth();
   const [refreshing, setRefreshing] = useState(false);
   const [shippings, setShippings] = useState<ShippingItem[]>([]);
 

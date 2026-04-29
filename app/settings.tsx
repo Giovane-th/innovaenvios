@@ -11,7 +11,7 @@ import {
   FlatList,
 } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
-import { useAuth } from '@/lib/auth-context-v2';
+import { useAuth } from '@/lib/auth-context';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLabelTracking } from '@/hooks/use-label-tracking';
