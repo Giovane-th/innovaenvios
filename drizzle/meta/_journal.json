@@ -22,6 +22,13 @@
       "when": 1777487542474,
       "tag": "0002_majestic_may_parker",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "5",
+      "when": 1777487800101,
+      "tag": "0003_common_earthquake",
+      "breakpoints": true
     }
   ]
 }

@@ -81,6 +81,9 @@ export const shippingLabels = mysqlTable("shipping_labels", {
   zipcode: varchar("zipcode", { length: 10 }).notNull(),
   reference_point: text("reference_point"),
   status: mysqlEnum("status", ["Gerada", "Postada", "Em trânsito", "Entregue"]).default("Gerada").notNull(),
+  cost: varchar("cost", { length: 20 }), // Custo do envio (ex: 15.50)
+  weight: varchar("weight", { length: 20 }), // Peso do pacote (ex: 500g)
+  service_type: varchar("service_type", { length: 100 }), // Tipo de serviço (ex: PAC, SEDEX)
   created_by: int("created_by").notNull(), // ID do funcionário que criou
   createdAt: timestamp("createdAt").defaultNow().notNull(),
   updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
