@@ -23,6 +23,14 @@ interface ShippingItem {
   date: string;
 }
 
+interface MenuOpcao {
+  id: string;
+  titulo: string;
+  icone: string;
+  cor: string;
+  acao: () => void;
+}
+
 export default function HomeScreen() {
   const colors = useColors();
   const router = useRouter();
@@ -66,6 +74,51 @@ export default function HomeScreen() {
       params: { id: item.id, code: item.code },
     });
   };
+
+  const menuOpcoes: MenuOpcao[] = [
+    { 
+      id: '1', 
+      titulo: 'Cadastrar Cliente', 
+      icone: 'person-add', 
+      cor: '#3B82F6', 
+      acao: () => router.push('/clients') 
+    },
+    { 
+      id: '2', 
+      titulo: 'Criar Etiqueta', 
+      icone: 'add-box', 
+      cor: '#10B981', 
+      acao: handleCreateLabel 
+    },
+    { 
+      id: '3', 
+      titulo: 'Rastrear Envio', 
+      icone: 'local-shipping', 
+      cor: '#F59E0B', 
+      acao: () => router.push('/tracking') 
+    },
+    { 
+      id: '4', 
+      titulo: 'Consultar Clientes', 
+      icone: 'search', 
+      cor: '#8B5CF6', 
+      acao: () => router.push('/clients') 
+    },
+    { 
+      id: '5', 
+      titulo: 'Relatórios', 
+      icone: 'bar-chart', 
+      cor: '#EC4899', 
+      acao: () => router.push('/reports') 
+    },
+    { 
+      id: '6', 
+      titulo: 'Configurações', 
+      icone: 'settings', 
+      cor: '#6B7280', 
+      acao: () => router.push('/settings') 
+    },
+  ];
 
   const getStatusColor = (status: string) => {
     switch (status) {
@@ -127,17 +180,56 @@ export default function HomeScreen() {
                   In'Nova Envios
                 </Text>
                 <Text className="text-sm text-muted mt-1">
-                  Bem-vindo de volta!
+                  Bem-vindo, {employee?.name || 'Funcionário'}!
                 </Text>
               </View>
 
               <TouchableOpacity
-                onPress={() => router.push("/settings-printer")}
+                onPress={() => router.push("/settings")}
                 className="p-3 bg-surface rounded-lg border border-border"
                 activeOpacity={0.7}
               >
                 <MaterialIcons name="settings" size={24} color={colors.primary} />
               </TouchableOpacity>
+            </View>
+
+            {/* Menu de Opções */}
+            <View className="mb-6">
+              <Text className="text-lg font-semibold text-foreground mb-3">
+                Opções Rápidas
+              </Text>
+              <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 12 }}>
+                {menuOpcoes.map((opcao) => (
+                  <TouchableOpacity
+                    key={opcao.id}
+                    onPress={opcao.acao}
+                    activeOpacity={0.7}
+                    style={{
+                      width: '48%',
+                      backgroundColor: opcao.cor + '15',
+                      borderColor: opcao.cor,
+                      borderWidth: 1,
+                      borderRadius: 12,
+                      padding: 12,
+                      alignItems: 'center',
+                      justifyContent: 'center',
+                    }}
+                  >
+                    <MaterialIcons name={opcao.icone as any} size={28} color={opcao.cor} />
+                    <Text 
+                      style={{ 
+                        color: opcao.cor, 
+                        marginTop: 8, 
+                        fontSize: 12, 
+                        fontWeight: '600', 
+                        textAlign: 'center' 
+                      }}
+                    >
+                      {opcao.titulo}
+                    </Text>
+                  </TouchableOpacity>
+                ))}
+              </View>
             </View>
 
             {/* Stats Cards */}
