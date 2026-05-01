@@ -61,7 +61,7 @@ describe('Shipment Calculations', () => {
   
   // Teste de validação de dimensões
   it('should validate shipment dimensions', () => {
-    const validateDimensions = (length, width, height, weight) => {
+    const validateDimensions = (length: number, width: number, height: number, weight: number) => {
       return length > 0 && width > 0 && height > 0 && weight > 0;
     };
     
@@ -84,7 +84,7 @@ describe('Shipment Calculations', () => {
 describe('Employee Authentication', () => {
   // Teste de validação de senha
   it('should validate employee password', () => {
-    const validatePassword = (password) => {
+    const validatePassword = (password: string) => {
       return !!(password && password.length >= 3);
     };
     
@@ -96,7 +96,7 @@ describe('Employee Authentication', () => {
 });
 
 describe('Report Filtering', () => {
-  let mockShipments;
+  let mockShipments: any[];
   
   beforeEach(() => {
     mockShipments = [
@@ -173,7 +173,7 @@ describe('Report Filtering', () => {
   
   // Teste de cálculo de custo médio
   it('should calculate average shipping cost', () => {
-    const total = mockShipments.reduce((sum, s) => sum + s.value, 0);
+    const total = mockShipments.reduce((sum: number, s: any) => sum + s.value, 0);
     const average = total / mockShipments.length;
     
     expect(average).toBe(40.00);
@@ -192,18 +192,18 @@ describe('Data Persistence', () => {
     };
     
     // Simular localStorage
-    const storage = {};
+    const storage: Record<string, string> = {};
     const mockLocalStorage = {
-      getItem: (key) => storage[key] || null,
-      setItem: (key, value) => { storage[key] = value; },
-      removeItem: (key) => { delete storage[key]; }
+      getItem: (key: string) => storage[key] || null,
+      setItem: (key: string, value: string) => { storage[key] = value; },
+      removeItem: (key: string) => { delete storage[key]; }
     };
     
-    const shipments = JSON.parse(mockLocalStorage.getItem('shipments') || '[]');
+    const shipments = JSON.parse((mockLocalStorage.getItem('shipments') || '[]') as string);
     shipments.push(shipment);
     mockLocalStorage.setItem('shipments', JSON.stringify(shipments));
     
-    const saved = JSON.parse(mockLocalStorage.getItem('shipments'));
+    const saved = JSON.parse((mockLocalStorage.getItem('shipments') || '[]') as string);
     expect(saved.length).toBeGreaterThan(0);
     expect(saved[saved.length - 1].tracking).toBe('AA123456789');
   });
