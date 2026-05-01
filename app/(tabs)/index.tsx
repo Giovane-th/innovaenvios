@@ -176,19 +176,20 @@ export default function HomeScreen() {
           <View className="pb-6">
             {/* Header with Logo */}
             <View className="flex-row items-center justify-between mb-6">
-              <View className="flex-1">
-                <Text className="text-2xl font-bold text-foreground">
-                  In'Nova Envios
-                </Text>
-                <Text className="text-sm text-muted mt-1">
-                  Bem-vindo, {employee?.name || 'Funcionário'}!
-                </Text>
+              <View className="flex-1 flex-row items-center">
+                <Image
+                  source={require("@/assets/images/icon.png")}
+                  style={{ width: 40, height: 40, marginRight: 12 }}
+                />
+                <View>
+                  <Text className="text-2xl font-bold text-foreground">
+                    In'Nova Envios
+                  </Text>
+                  <Text className="text-sm text-muted mt-1">
+                    Bem-vindo, {employee?.name || 'Funcionário'}!
+                  </Text>
+                </View>
               </View>
-
-              <Image
-                source={require("@/assets/images/icon.png")}
-                style={{ width: 60, height: 60, marginRight: 12, opacity: 0.15 }}
-              />
 
               <TouchableOpacity
                 onPress={() => router.push("/settings")}
@@ -197,6 +198,23 @@ export default function HomeScreen() {
               >
                 <MaterialIcons name="settings" size={24} color={colors.primary} />
               </TouchableOpacity>
+            </View>
+
+            {/* Watermark Background */}
+            <View
+              style={{
+                position: 'absolute',
+                top: '50%',
+                left: '50%',
+                transform: [{ translateX: -75 }, { translateY: -75 }],
+                opacity: 0.08,
+                zIndex: 0,
+              }}
+            >
+              <Image
+                source={require("@/assets/images/icon.png")}
+                style={{ width: 150, height: 150 }}
+              />
             </View>
 
             {/* Menu de Opções */}
