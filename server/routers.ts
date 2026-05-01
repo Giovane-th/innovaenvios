@@ -356,6 +356,62 @@ export const appRouter = router({
         return await db.updateSettings(input);
       }),
   }),
+  sync: router({
+    syncShipments: publicProcedure
+      .input(z.object({
+        shipments: z.array(z.any()).optional(),
+      }))
+      .mutation(async ({ input }) => {
+        if (!input.shipments) return { success: false };
+        
+        try {
+          for (const shipment of input.shipments) {
+            await db.createShippingLabel({
+              code: shipment.tracking,
+              recipient: shipment.clientName,
+              email: shipment.email,
+              phone: shipment.phone,
+              address: shipment.address,
+              number: shipment.number || '0',
+              city: shipment.city || '',
+              state: shipment.state || '',
+              zipcode: shipment.zipcode || '',
+              status: 'Gerada',
+              cost: shipment.shippingValue?.toString(),
+              weight: shipment.weight?.toString(),
+              service_type: shipment.service,
+              created_by: 1,
+            });
+          }
+          return { success: true, count: input.shipments.length };
+        } catch (error) {
+          console.error('Sync error:', error);
+          return { success: false, error: String(error) };
+        }
+      }),
+    syncSettings: publicProcedure
+      .input(z.object({
+        settings: z.any(),
+      }))
+      .mutation(async ({ input }) => {
+        try {
+          await db.updateSettings(input.settings);
+          return { success: true };
+        } catch (error) {
+          console.error('Settings sync error:', error);
+          return { success: false, error: String(error) };
+        }
+      }),
+    getShipments: publicProcedure
+      .query(async () => {
+        try {
+          return await db.getShippingLabels();
+        } catch (error) {
+          console.error('Get shipments error:', error);
+          return [];
+        }
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

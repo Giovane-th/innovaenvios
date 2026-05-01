@@ -108,8 +108,8 @@ export default function LoginScreen() {
         {/* Logo Section */}
         <View className="items-center pt-8 pb-6">
           <Image
-            source={require("@/assets/images/login-bg.png")}
-            style={{ width: "100%", height: 280, resizeMode: "contain" }}
+            source={require("@/assets/images/logo-watermark.jpg")}
+            style={{ width: 280, height: 280, resizeMode: "contain" }}
           />
         </View>
 
