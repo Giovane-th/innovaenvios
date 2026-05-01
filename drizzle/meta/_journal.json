@@ -29,6 +29,13 @@
       "when": 1777487800101,
       "tag": "0003_common_earthquake",
       "breakpoints": true
+    },
+    {
+      "idx": 4,
+      "version": "5",
+      "when": 1777608572910,
+      "tag": "0004_mushy_wendell_vaughn",
+      "breakpoints": true
     }
   ]
 }

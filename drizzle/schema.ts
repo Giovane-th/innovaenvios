@@ -91,3 +91,44 @@ export const shippingLabels = mysqlTable("shipping_labels", {
 
 export type ShippingLabel = typeof shippingLabels.$inferSelect;
 export type InsertShippingLabel = typeof shippingLabels.$inferInsert;
+
+// Tabela de funcionários
+export const employees = mysqlTable("employees", {
+  id: int("id").autoincrement().primaryKey(),
+  name: varchar("name", { length: 255 }).notNull(),
+  email: varchar("email", { length: 320 }).notNull().unique(),
+  role: varchar("role", { length: 100 }).notNull(), // Cargo (ex: Operador, Gerente)
+  password: varchar("password", { length: 255 }).notNull(), // Hash da senha
+  isActive: int("isActive").default(1).notNull(), // 1 = ativo, 0 = inativo
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Employee = typeof employees.$inferSelect;
+export type InsertEmployee = typeof employees.$inferInsert;
+
+// Tabela de configurações
+export const settings = mysqlTable("settings", {
+  id: int("id").autoincrement().primaryKey(),
+  companyName: varchar("companyName", { length: 255 }).notNull().default("In'Nova Envios"),
+  cnpj: varchar("cnpj", { length: 20 }),
+  address: varchar("address", { length: 255 }),
+  city: varchar("city", { length: 100 }),
+  state: varchar("state", { length: 2 }),
+  zip: varchar("zip", { length: 10 }),
+  correiosContract: varchar("correiosContract", { length: 255 }),
+  correiosApiKey: varchar("correiosApiKey", { length: 255 }),
+  correiosUser: varchar("correiosUser", { length: 255 }),
+  correiosPassword: varchar("correiosPassword", { length: 255 }),
+  primaryColor: varchar("primaryColor", { length: 7 }).default("#0a7ea4"),
+  secondaryColor: varchar("secondaryColor", { length: 7 }).default("#1abc9c"),
+  logoUrl: text("logoUrl"),
+  enableNotifications: int("enableNotifications").default(1),
+  enableAutoBackup: int("enableAutoBackup").default(1),
+  darkMode: int("darkMode").default(0),
+  createdAt: timestamp("createdAt").defaultNow().notNull(),
+  updatedAt: timestamp("updatedAt").defaultNow().onUpdateNow().notNull(),
+});
+
+export type Setting = typeof settings.$inferSelect;
+export type InsertSetting = typeof settings.$inferInsert;

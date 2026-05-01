@@ -280,6 +280,82 @@ export const appRouter = router({
         return { success: true };
       }),
   }),
+  employees: router({
+    list: publicProcedure
+      .input(z.object({ limit: z.number().optional(), offset: z.number().optional() }).optional())
+      .query(async ({ input }) => {
+        return await db.getEmployees(input?.limit, input?.offset);
+      }),
+
+    getById: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .query(async ({ input }) => {
+        return await db.getEmployeeById(input.id);
+      }),
+
+    create: publicProcedure
+      .input(z.object({
+        name: z.string(),
+        email: z.string().email(),
+        role: z.string(),
+        password: z.string(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.createEmployee(input);
+      }),
+
+    update: publicProcedure
+      .input(z.object({
+        id: z.number(),
+        name: z.string().optional(),
+        email: z.string().email().optional(),
+        role: z.string().optional(),
+        password: z.string().optional(),
+        isActive: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        const { id, ...data } = input;
+        await db.updateEmployee(id, data);
+        return await db.getEmployeeById(id);
+      }),
+
+    delete: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await db.deleteEmployee(input.id);
+        return { success: true };
+      }),
+  }),
+
+  settings: router({
+    get: publicProcedure
+      .query(async () => {
+        return await db.getSettings();
+      }),
+
+    update: publicProcedure
+      .input(z.object({
+        companyName: z.string().optional(),
+        cnpj: z.string().optional(),
+        address: z.string().optional(),
+        city: z.string().optional(),
+        state: z.string().optional(),
+        zip: z.string().optional(),
+        correiosContract: z.string().optional(),
+        correiosApiKey: z.string().optional(),
+        correiosUser: z.string().optional(),
+        correiosPassword: z.string().optional(),
+        primaryColor: z.string().optional(),
+        secondaryColor: z.string().optional(),
+        logoUrl: z.string().optional(),
+        enableNotifications: z.number().optional(),
+        enableAutoBackup: z.number().optional(),
+        darkMode: z.number().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await db.updateSettings(input);
+      }),
+  }),
 });
 
 export type AppRouter = typeof appRouter;

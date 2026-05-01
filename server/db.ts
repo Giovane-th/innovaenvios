@@ -1,6 +1,6 @@
 import { eq, like, and } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
-import { InsertUser, users, clients, InsertClient, Client, shippingLabels, InsertShippingLabel, ShippingLabel } from "../drizzle/schema";
+import { InsertUser, users, clients, InsertClient, Client, shippingLabels, InsertShippingLabel, ShippingLabel, employees, InsertEmployee, Employee, settings, InsertSetting, Setting } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
 let _db: ReturnType<typeof drizzle> | null = null;
@@ -286,6 +286,134 @@ export async function deleteShippingLabel(id: number): Promise<void> {
     await db.delete(shippingLabels).where(eq(shippingLabels.id, id));
   } catch (error) {
     console.error("[Database] Failed to delete shipping label:", error);
+    throw error;
+  }
+}
+
+// ===== FUNCIONÁRIOS =====
+
+export async function createEmployee(data: InsertEmployee): Promise<Employee | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot create employee: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.insert(employees).values(data);
+    const newEmployee = await db.select().from(employees).where(eq(employees.id, Number((result as any).insertId))).limit(1);
+    return newEmployee.length > 0 ? newEmployee[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to create employee:", error);
+    throw error;
+  }
+}
+
+export async function getEmployees(limit?: number, offset?: number): Promise<Employee[]> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get employees: database not available");
+    return [];
+  }
+
+  try {
+    let query: any = db.select().from(employees);
+    if (limit) {
+      query = query.limit(limit);
+    }
+    if (offset) {
+      query = query.offset(offset);
+    }
+    return await query;
+  } catch (error) {
+    console.error("[Database] Failed to get employees:", error);
+    return [];
+  }
+}
+
+export async function getEmployeeById(id: number): Promise<Employee | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get employee: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.select().from(employees).where(eq(employees.id, id)).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to get employee:", error);
+    return null;
+  }
+}
+
+export async function updateEmployee(id: number, data: Partial<InsertEmployee>): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update employee: database not available");
+    return;
+  }
+
+  try {
+    await db.update(employees).set({ ...data, updatedAt: new Date() }).where(eq(employees.id, id));
+  } catch (error) {
+    console.error("[Database] Failed to update employee:", error);
+    throw error;
+  }
+}
+
+export async function deleteEmployee(id: number): Promise<void> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot delete employee: database not available");
+    return;
+  }
+
+  try {
+    await db.delete(employees).where(eq(employees.id, id));
+  } catch (error) {
+    console.error("[Database] Failed to delete employee:", error);
+    throw error;
+  }
+}
+
+// ===== CONFIGURAÇÕES =====
+
+export async function getSettings(): Promise<Setting | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot get settings: database not available");
+    return null;
+  }
+
+  try {
+    const result = await db.select().from(settings).limit(1);
+    return result.length > 0 ? result[0] : null;
+  } catch (error) {
+    console.error("[Database] Failed to get settings:", error);
+    return null;
+  }
+}
+
+export async function updateSettings(data: Partial<InsertSetting>): Promise<Setting | null> {
+  const db = await getDb();
+  if (!db) {
+    console.warn("[Database] Cannot update settings: database not available");
+    return null;
+  }
+
+  try {
+    const existingSettings = await getSettings();
+    if (!existingSettings) {
+      const result = await db.insert(settings).values(data as InsertSetting);
+      const newSettings = await db.select().from(settings).where(eq(settings.id, Number((result as any).insertId))).limit(1);
+      return newSettings.length > 0 ? newSettings[0] : null;
+    } else {
+      await db.update(settings).set({ ...data, updatedAt: new Date() }).where(eq(settings.id, existingSettings.id));
+      return await getSettings();
+    }
+  } catch (error) {
+    console.error("[Database] Failed to update settings:", error);
     throw error;
   }
 }
