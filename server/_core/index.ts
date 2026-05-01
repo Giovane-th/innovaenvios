@@ -7,6 +7,7 @@ import { registerOAuthRoutes } from "./oauth";
 import { registerStorageProxy } from "./storageProxy";
 import { appRouter } from "../routers";
 import { createContext } from "./context";
+import * as db from "../db.js";
 
 function isPortAvailable(port: number): Promise<boolean> {
   return new Promise((resolve) => {
@@ -60,6 +61,26 @@ async function startServer() {
 
   app.get("/api/health", (_req, res) => {
     res.json({ ok: true, timestamp: Date.now() });
+  });
+
+  // Rota alternativa para criar cliente (workaround para problema com tRPC)
+  app.post("/api/clients", async (req, res) => {
+    try {
+      const client = await db.createClient(req.body);
+      res.json({ result: { data: client } });
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    }
+  });
+
+  // Rota alternativa para listar clientes
+  app.get("/api/clients", async (req, res) => {
+    try {
+      const clients = await db.getClients();
+      res.json({ result: { data: clients } });
+    } catch (error) {
+      res.status(400).json({ error: error instanceof Error ? error.message : String(error) });
+    }
   });
 
   app.use(

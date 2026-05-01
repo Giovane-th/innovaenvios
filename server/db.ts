@@ -3,6 +3,8 @@ import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, clients, InsertClient, Client, shippingLabels, InsertShippingLabel, ShippingLabel, employees, InsertEmployee, Employee, settings, InsertSetting, Setting } from "../drizzle/schema";
 import { ENV } from "./_core/env";
 
+
+
 let _db: ReturnType<typeof drizzle> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
@@ -99,8 +101,16 @@ export async function createClient(data: InsertClient): Promise<Client | null> {
   }
 
   try {
+    // Drizzle retorna um objeto com insertId ou id
     const result = await db.insert(clients).values(data);
-    const newClient = await db.select().from(clients).where(eq(clients.id, Number((result as any).insertId))).limit(1);
+    const insertId = (result as any).insertId || (result as any)[0]?.id;
+    
+    if (!insertId) {
+      // Se não conseguir o ID, retorna os dados inseridos
+      return { ...data, id: 0, createdAt: new Date(), updatedAt: new Date() } as Client;
+    }
+    
+    const newClient = await db.select().from(clients).where(eq(clients.id, Number(insertId))).limit(1);
     return newClient.length > 0 ? newClient[0] : null;
   } catch (error) {
     console.error("[Database] Failed to create client:", error);
