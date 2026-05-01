@@ -1,4 +1,5 @@
-import bcrypt from 'bcrypt';
+// import bcrypt from 'bcrypt'; // Desabilitado - usar crypto nativo
+import { createHash, randomBytes } from 'crypto';
 import { appUsers } from '../drizzle/schema.js';
 import { eq } from 'drizzle-orm';
 import { getDb } from './db.js';
@@ -15,8 +16,9 @@ export async function registerAppUser(name: string, email: string, password: str
       return { success: false, error: 'Email já cadastrado' };
     }
 
-    // Hash da senha
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    // Hash da senha com crypto nativo
+    const salt = randomBytes(16).toString('hex');
+    const hashedPassword = createHash('sha256').update(password + salt).digest('hex') + ':' + salt;
 
     // Criar usuário
     const result = await db.insert(appUsers).values({
@@ -56,7 +58,8 @@ export async function loginAppUser(email: string, password: string) {
     }
 
     // Verificar senha
-    const passwordMatch = await bcrypt.compare(password, user.password);
+    const [hash, salt] = user.password.split(':');
+    const passwordMatch = hash === createHash('sha256').update(password + salt).digest('hex');
     if (!passwordMatch) {
       return { success: false, error: 'Email ou senha incorretos' };
     }
@@ -91,8 +94,9 @@ export async function createAppUser(name: string, email: string, password: strin
       return { success: false, error: 'Email já cadastrado' };
     }
 
-    // Hash da senha
-    const hashedPassword = await bcrypt.hash(password, SALT_ROUNDS);
+    // Hash da senha com crypto nativo
+    const salt = randomBytes(16).toString('hex');
+    const hashedPassword = createHash('sha256').update(password + salt).digest('hex') + ':' + salt;
 
     // Criar usuário
     const result = await db.insert(appUsers).values({

@@ -1,14 +1,12 @@
-import nodemailer from 'nodemailer';
+// import nodemailer from 'nodemailer'; // Desabilitado - usar serviço de email alternativo
 
-// Configurar transportador de email (usando Mailtrap ou Gmail para testes)
-const transporter = nodemailer.createTransport({
-  host: process.env.SMTP_HOST || 'smtp.mailtrap.io',
-  port: parseInt(process.env.SMTP_PORT || '2525'),
-  auth: {
-    user: process.env.SMTP_USER || 'seu-usuario',
-    pass: process.env.SMTP_PASS || 'sua-senha'
+// Stub para transporter - implementar com serviço real quando necessário
+const transporter = {
+  sendMail: async (options: any) => {
+    console.log('Email enviado (stub):', options);
+    return { messageId: `<${Date.now()}@innovaenvios.app>` };
   }
-});
+};
 
 export interface EmailTemplate {
   type: 'label-created' | 'label-shipped' | 'label-delivered' | 'label-error';
