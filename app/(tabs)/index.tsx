@@ -5,6 +5,7 @@ import {
   TouchableOpacity,
   FlatList,
   RefreshControl,
+  Image,
 } from "react-native";
 import { useState, useEffect } from "react";
 import { useRouter } from "expo-router";
@@ -173,9 +174,9 @@ export default function HomeScreen() {
         scrollEnabled={false}
         ListHeaderComponent={
           <View className="pb-6">
-            {/* Header */}
+            {/* Header with Logo */}
             <View className="flex-row items-center justify-between mb-6">
-              <View>
+              <View className="flex-1">
                 <Text className="text-2xl font-bold text-foreground">
                   In'Nova Envios
                 </Text>
@@ -183,6 +184,11 @@ export default function HomeScreen() {
                   Bem-vindo, {employee?.name || 'Funcionário'}!
                 </Text>
               </View>
+
+              <Image
+                source={require("@/assets/images/icon.png")}
+                style={{ width: 60, height: 60, marginRight: 12, opacity: 0.15 }}
+              />
 
               <TouchableOpacity
                 onPress={() => router.push("/settings")}

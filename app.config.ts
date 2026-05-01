@@ -32,7 +32,7 @@ const env = {
   appSlug: "innova-envios",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
-  logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663558359823/DzZpCobgrtCAfaHT4VVRne/icon-eLvnPdGGaXNouWyCH8jQa8.webp",
+  logoUrl: "https://d2xsxph8kpxj0f.cloudfront.net/310519663558359823/DzZpCobgrtCAfaHT4VVRne/icon-UsLFeUHzT9UZFkTaXsHDgG.webp",
   scheme: schemeFromBundleId,
   iosBundleId: bundleId,
   androidPackage: bundleId,
