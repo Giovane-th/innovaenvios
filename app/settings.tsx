@@ -16,7 +16,6 @@ import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
 import { useLabelTracking } from '@/hooks/use-label-tracking';
 import AsyncStorage from '@react-native-async-storage/async-storage';
-import { ModalHeader } from '@/components/modal-header';
 
 export default function SettingsScreen() {
   const router = useRouter();
@@ -305,17 +304,10 @@ export default function SettingsScreen() {
       {/* Modal Configurações Correios */}
       <Modal visible={showCorreiosSettings} transparent animationType="slide">
         <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white rounded-t-2xl">
-            <ModalHeader
-              title="Configurações Correios"
-              onClose={() => setShowCorreiosSettings(false)}
-              rightAction={{
-                label: "Salvar",
-                onPress: handleSaveCorreiosSettings,
-                loading: false,
-              }}
-            />
-            <View className="p-6">
+          <View className="bg-white rounded-t-2xl p-6">
+            <Text className="text-2xl font-bold text-foreground mb-6">
+              Configurações Correios
+            </Text>
 
             <Text className="text-sm font-semibold text-gray-600 mb-2">
               Cartão de Postagem
@@ -434,6 +426,30 @@ export default function SettingsScreen() {
               }}
             />
 
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                onPress={() => setShowCorreiosSettings(false)}
+                disabled={loading}
+                className="flex-1 bg-gray-200 rounded-lg p-4"
+              >
+                <Text className="text-gray-800 font-semibold text-center">
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleSaveCorreiosSettings}
+                disabled={loading}
+                className={`flex-1 bg-blue-600 rounded-lg p-4 flex-row justify-center items-center ${
+                  loading ? 'opacity-70' : ''
+                }`}
+              >
+                {loading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text className="text-white font-semibold">Salvar</Text>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
         </View>
@@ -442,17 +458,12 @@ export default function SettingsScreen() {
       {/* Modal Adicionar Funcionário */}
       <Modal visible={showAddEmployee} transparent animationType="slide">
         <View className="flex-1 bg-black/50 justify-end">
-          <View className="bg-white rounded-t-2xl">
-            <ModalHeader
-              title="Novo Funcionário"
-              onClose={() => setShowAddEmployee(false)}
-              rightAction={{
-                label: "Criar",
-                onPress: handleAddEmployee,
-                loading: loading,
-              }}
-            />
-            <View className="p-6">           <Text className="text-sm font-semibold text-gray-600 mb-2">
+          <View className="bg-white rounded-t-2xl p-6">
+            <Text className="text-2xl font-bold text-foreground mb-6">
+              Novo Funcionário
+            </Text>
+
+            <Text className="text-sm font-semibold text-gray-600 mb-2">
               Nome
             </Text>
             <TextInput
@@ -512,6 +523,30 @@ export default function SettingsScreen() {
               }}
             />
 
+            <View className="flex-row gap-3">
+              <TouchableOpacity
+                onPress={() => setShowAddEmployee(false)}
+                disabled={loading}
+                className="flex-1 bg-gray-200 rounded-lg p-4"
+              >
+                <Text className="text-gray-800 font-semibold text-center">
+                  Cancelar
+                </Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={handleAddEmployee}
+                disabled={loading}
+                className={`flex-1 bg-blue-600 rounded-lg p-4 flex-row justify-center items-center ${
+                  loading ? 'opacity-70' : ''
+                }`}
+              >
+                {loading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <Text className="text-white font-semibold">Criar</Text>
+                )}
+              </TouchableOpacity>
             </View>
           </View>
         </View>

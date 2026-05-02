@@ -17,7 +17,6 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { cn } from "@/lib/utils";
 import { AddStudentModal } from "./add-student-modal";
 import { useStudents } from "@/hooks/use-students";
-import { ModalHeader } from "@/components/modal-header";
 
 interface FormData {
   // Remetente
@@ -185,11 +184,14 @@ export default function CreateLabelScreen() {
 
   return (
     <ScreenContainer className="flex-1">
-      <ModalHeader
-        title="Nova Etiqueta"
-        onClose={() => router.back()}
-      />
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View className="flex-row items-center justify-between mb-6 mt-4">
+          <Text className="text-2xl font-bold text-foreground">Nova Etiqueta</Text>
+          <TouchableOpacity activeOpacity={0.7}>
+            <MaterialIcons name="close" size={24} color={colors.foreground} />
+          </TouchableOpacity>
+        </View>
 
         {/* Sender Section */}
         <SectionHeader title="📤 Remetente" section="sender" />

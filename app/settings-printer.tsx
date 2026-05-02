@@ -13,8 +13,6 @@ import { ScreenContainer } from "@/components/screen-container";
 import { useColors } from "@/hooks/use-colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import AsyncStorage from "@react-native-async-storage/async-storage";
-import { ModalHeader } from "@/components/modal-header";
-import { useRouter } from "expo-router";
 
 interface Printer {
   id: string;
@@ -131,14 +129,18 @@ export default function SettingsPrinterScreen() {
     // TODO: Implementar teste real de conexão
   };
 
-  const router = useRouter();
   return (
     <ScreenContainer className="flex-1">
-      <ModalHeader
-        title="Impressoras"
-        onClose={() => router.back()}
-      />
-      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+      <ScrollView showsVerticalScrollIndicator={false}>
+        {/* Header */}
+        <View className="mb-6 mt-4">
+          <Text className="text-2xl font-bold text-foreground">
+            Impressoras
+          </Text>
+          <Text className="text-sm text-muted mt-1">
+            Configure as impressoras de etiquetas
+          </Text>
+        </View>
 
         {/* Add Printer Button */}
         {!showForm && (
