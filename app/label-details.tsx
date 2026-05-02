@@ -13,6 +13,8 @@ import { useColors } from "@/hooks/use-colors";
 import { MaterialIcons } from "@expo/vector-icons";
 import * as Clipboard from "expo-clipboard";
 import { useThermalPrinter } from "@/hooks/use-thermal-printer";
+import { ModalHeader } from "@/components/modal-header";
+import { useRouter } from "expo-router";
 
 interface LabelDetails {
   trackingCode: string;
@@ -106,23 +108,14 @@ export default function LabelDetailsScreen() {
     }
   };
 
+  const router = useRouter();
   return (
     <ScreenContainer className="flex-1">
-      <ScrollView showsVerticalScrollIndicator={false}>
-        {/* Header */}
-        <View className="flex-row items-center justify-between mb-6 mt-4">
-          <View>
-            <Text className="text-2xl font-bold text-foreground">
-              Etiqueta #{MOCK_LABEL.trackingCode.slice(-6)}
-            </Text>
-            <Text className="text-sm text-muted mt-1">
-              Gerada em {MOCK_LABEL.generatedDate}
-            </Text>
-          </View>
-          <TouchableOpacity activeOpacity={0.7}>
-            <MaterialIcons name="close" size={24} color={colors.foreground} />
-          </TouchableOpacity>
-        </View>
+      <ModalHeader
+        title={`Etiqueta #${MOCK_LABEL.trackingCode.slice(-6)}`}
+        onClose={() => router.back()}
+      />
+      <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
 
         {/* Barcode Preview Section */}
         <View className="bg-surface rounded-lg p-6 mb-6 border border-border items-center">
