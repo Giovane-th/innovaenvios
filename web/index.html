@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In'Nova Envios - Sistema de Gestão de Envios</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #003DA5;
+            --secondary: #FFC700;
+            --background: #f5f5f5;
+            --surface: #ffffff;
+            --text: #11181C;
+            --text-muted: #687076;
+            --border: #E5E7EB;
+            --success: #22C55E;
+            --error: #EF4444;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, Cantarell, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            line-height: 1.6;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 16px;
+        }
+
+        /* Header */
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 16px 0;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+
+        .header-content {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            gap: 16px;
+        }
+
+        .logo {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            text-decoration: none;
+            color: var(--text);
+            font-weight: 600;
+            font-size: 18px;
+        }
+
+        .logo-icon {
+            width: 40px;
+            height: 40px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-weight: bold;
+        }
+
+        .nav-toggle {
+            display: none;
+            background: none;
+            border: none;
+            font-size: 24px;
+            cursor: pointer;
+            color: var(--primary);
+        }
+
+        /* Sidebar */
+        .sidebar {
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: 250px;
+            height: 100vh;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            padding-top: 70px;
+            overflow-y: auto;
+            z-index: 99;
+            transition: transform 0.3s ease;
+        }
+
+        .sidebar.mobile-open {
+            transform: translateX(0);
+        }
+
+        .sidebar nav {
+            padding: 16px 0;
+        }
+
+        .sidebar nav a {
+            display: block;
+            padding: 12px 20px;
+            color: var(--text);
+            text-decoration: none;
+            border-left: 3px solid transparent;
+            transition: all 0.2s;
+        }
+
+        .sidebar nav a:hover,
+        .sidebar nav a.active {
+            background-color: var(--background);
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+
+        /* Main Content */
+        main {
+            margin-left: 250px;
+            margin-top: 70px;
+            padding: 24px;
+            min-height: calc(100vh - 70px);
+        }
+
+        .page {
+            display: none;
+        }
+
+        .page.active {
+            display: block;
+            animation: fadeIn 0.3s ease;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+
+        /* Cards */
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 24px;
+            margin-bottom: 16px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+
+        .card h2 {
+            margin-bottom: 16px;
+            color: var(--primary);
+            font-size: 20px;
+        }
+
+        /* Forms */
+        .form-group {
+            margin-bottom: 16px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 500;
+            color: var(--text);
+        }
+
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+            transition: border-color 0.2s;
+        }
+
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.1);
+        }
+
+        /* Buttons */
+        .btn {
+            padding: 12px 24px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background-color: #0029a0;
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0, 61, 165, 0.3);
+        }
+
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--text);
+        }
+
+        .btn-secondary:hover {
+            background-color: #ffb800;
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 12px;
+        }
+
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+
+        th {
+            background-color: var(--background);
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        tr:hover {
+            background-color: var(--background);
+        }
+
+        /* Status Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .badge-success {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+
+        .badge-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+
+        /* Alert */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+
+        .alert.show {
+            display: block;
+        }
+
+        .alert-success {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+
+        /* Loading */
+        .loading {
+            display: inline-block;
+            width: 16px;
+            height: 16px;
+            border: 2px solid var(--border);
+            border-top-color: var(--primary);
+            border-radius: 50%;
+            animation: spin 0.6s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav-toggle {
+                display: block;
+            }
+
+            .sidebar {
+                transform: translateX(-100%);
+                width: 100%;
+                max-width: 280px;
+            }
+
+            main {
+                margin-left: 0;
+                padding: 16px;
+            }
+
+            .card {
+                padding: 16px;
+            }
+
+            .header-content {
+                gap: 8px;
+            }
+
+            table {
+                font-size: 12px;
+            }
+
+            th, td {
+                padding: 8px;
+            }
+
+            .btn {
+                width: 100%;
+                margin-bottom: 8px;
+            }
+        }
+
+        @media (max-width: 480px) {
+            .logo-icon {
+                width: 32px;
+                height: 32px;
+            }
+
+            .logo {
+                font-size: 16px;
+                gap: 8px;
+            }
+
+            .card {
+                padding: 12px;
+            }
+
+            input, select, textarea {
+                font-size: 16px;
+            }
+        }
+
+        /* Grid */
+        .grid {
+            display: grid;
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+
+        .grid-2 {
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        }
+
+        /* Dashboard Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 24px;
+        }
+
+        .stat-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 8px 0;
+        }
+
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+    </style>
+</head>
+<body>
+    <!-- Header -->
+    <header>
+        <div class="container">
+            <div class="header-content">
+                <a href="#" class="logo">
+                    <div class="logo-icon">📦</div>
+                    <span>In'Nova Envios</span>
+                </a>
+                <button class="nav-toggle" onclick="toggleSidebar()">☰</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Sidebar -->
+    <aside class="sidebar" id="sidebar">
+        <nav>
+            <a href="#" onclick="showPage('dashboard')" class="nav-link active">📊 Dashboard</a>
+            <a href="#" onclick="showPage('clients')" class="nav-link">👥 Clientes</a>
+            <a href="#" onclick="showPage('shipping')" class="nav-link">📮 Envios</a>
+            <a href="#" onclick="showPage('labels')" class="nav-link">🏷️ Etiquetas</a>
+            <a href="#" onclick="showPage('reports')" class="nav-link">📈 Relatórios</a>
+            <a href="#" onclick="showPage('settings')" class="nav-link">⚙️ Configurações</a>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main>
+        <div class="container">
+            <!-- Alert -->
+            <div class="alert" id="alert"></div>
+
+            <!-- Dashboard Page -->
+            <div class="page active" id="dashboard">
+                <h1>Dashboard</h1>
+                <div class="stats">
+                    <div class="stat-card">
+                        <div class="stat-label">Clientes</div>
+                        <div class="stat-value" id="stat-clients">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Envios Hoje</div>
+                        <div class="stat-value" id="stat-today">0</div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-label">Total Enviado</div>
+                        <div class="stat-value" id="stat-total">R$ 0,00</div>
+                    </div>
+                </div>
+                <div class="card">
+                    <h2>Últimos Envios</h2>
+                    <table id="recent-shipments">
+                        <thead>
+                            <tr>
+                                <th>Cliente</th>
+                                <th>Destino</th>
+                                <th>Status</th>
+                                <th>Data</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted);">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Clients Page -->
+            <div class="page" id="clients">
+                <h1>Gerenciar Clientes</h1>
+                <div class="card">
+                    <h2>Novo Cliente</h2>
+                    <form onsubmit="addClient(event)">
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label>Nome</label>
+                                <input type="text" id="client-name" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Email</label>
+                                <input type="email" id="client-email" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Telefone</label>
+                                <input type="tel" id="client-phone">
+                            </div>
+                            <div class="form-group">
+                                <label>CEP</label>
+                                <input type="text" id="client-cep" placeholder="00000-000">
+                            </div>
+                            <div class="form-group">
+                                <label>Endereço</label>
+                                <input type="text" id="client-address">
+                            </div>
+                            <div class="form-group">
+                                <label>Cidade</label>
+                                <input type="text" id="client-city">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Adicionar Cliente</button>
+                    </form>
+                </div>
+                <div class="card">
+                    <h2>Clientes Cadastrados</h2>
+                    <table id="clients-table">
+                        <thead>
+                            <tr>
+                                <th>Nome</th>
+                                <th>Email</th>
+                                <th>Telefone</th>
+                                <th>Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td colspan="4" style="text-align: center; color: var(--text-muted);">Carregando...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Shipping Page -->
+            <div class="page" id="shipping">
+                <h1>Calcular Frete</h1>
+                <div class="card">
+                    <h2>Simular Frete</h2>
+                    <form onsubmit="calculateShipping(event)">
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label>Cliente</label>
+                                <select id="shipping-client" required>
+                                    <option value="">Selecione um cliente</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>CEP Destino</label>
+                                <input type="text" id="shipping-cep" placeholder="00000-000" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Peso (kg)</label>
+                                <input type="number" id="shipping-weight" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Largura (cm)</label>
+                                <input type="number" id="shipping-width" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Altura (cm)</label>
+                                <input type="number" id="shipping-height" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Comprimento (cm)</label>
+                                <input type="number" id="shipping-length" step="0.01" required>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Calcular Frete</button>
+                    </form>
+                    <div id="shipping-result" style="margin-top: 20px; display: none;">
+                        <h3>Resultado</h3>
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>Serviço</th>
+                                    <th>Valor</th>
+                                    <th>Prazo</th>
+                                </tr>
+                            </thead>
+                            <tbody id="shipping-result-body">
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Labels Page -->
+            <div class="page" id="labels">
+                <h1>Gerar Etiquetas</h1>
+                <div class="card">
+                    <h2>Nova Etiqueta</h2>
+                    <form onsubmit="generateLabel(event)">
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label>Cliente</label>
+                                <select id="label-client" required>
+                                    <option value="">Selecione um cliente</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Funcionário</label>
+                                <select id="label-employee" required>
+                                    <option value="">Selecione um funcionário</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>CEP Destino</label>
+                                <input type="text" id="label-cep" placeholder="00000-000" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Peso (kg)</label>
+                                <input type="number" id="label-weight" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Valor (R$)</label>
+                                <input type="number" id="label-value" step="0.01" required>
+                            </div>
+                            <div class="form-group">
+                                <label>Serviço</label>
+                                <select id="label-service" required>
+                                    <option value="04014">PAC</option>
+                                    <option value="04162">SEDEX</option>
+                                </select>
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Gerar Etiqueta</button>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Reports Page -->
+            <div class="page" id="reports">
+                <h1>Relatórios</h1>
+                <div class="card">
+                    <h2>Relatório de Envios</h2>
+                    <div class="grid grid-2">
+                        <div class="form-group">
+                            <label>Data Inicial</label>
+                            <input type="date" id="report-start">
+                        </div>
+                        <div class="form-group">
+                            <label>Data Final</label>
+                            <input type="date" id="report-end">
+                        </div>
+                    </div>
+                    <button class="btn btn-primary" onclick="generateReport()">Gerar Relatório</button>
+                    <button class="btn btn-secondary" onclick="exportPDF()">Exportar PDF</button>
+                </div>
+            </div>
+
+            <!-- Settings Page -->
+            <div class="page" id="settings">
+                <h1>Configurações</h1>
+                <div class="card">
+                    <h2>Integração Correios</h2>
+                    <form onsubmit="saveSettings(event)">
+                        <div class="grid grid-2">
+                            <div class="form-group">
+                                <label>Cartão de Postagem</label>
+                                <input type="text" id="settings-postcard" placeholder="0000000000">
+                            </div>
+                            <div class="form-group">
+                                <label>Contrato</label>
+                                <input type="text" id="settings-contract">
+                            </div>
+                            <div class="form-group">
+                                <label>Usuário Correios</label>
+                                <input type="text" id="settings-user">
+                            </div>
+                            <div class="form-group">
+                                <label>Senha Correios</label>
+                                <input type="password" id="settings-password">
+                            </div>
+                            <div class="form-group">
+                                <label>CEP de Origem</label>
+                                <input type="text" id="settings-origin-cep" placeholder="00000-000">
+                            </div>
+                            <div class="form-group">
+                                <label>Código Administrativo</label>
+                                <input type="text" id="settings-admin-code">
+                            </div>
+                        </div>
+                        <button type="submit" class="btn btn-primary">Salvar Configurações</button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </main>
+
+    <script>
+        const API_URL = window.location.origin;
+
+        // Navigation
+        function showPage(pageName) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageName).classList.add('active');
+            
+            document.querySelectorAll('.nav-link').forEach(l => l.classList.remove('active'));
+            event.target.classList.add('active');
+            
+            closeSidebar();
+        }
+
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('mobile-open');
+        }
+
+        function closeSidebar() {
+            document.getElementById('sidebar').classList.remove('mobile-open');
+        }
+
+        // Alert
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert alert-${type} show`;
+            setTimeout(() => alert.classList.remove('show'), 3000);
+        }
+
+        // API Calls
+        async function apiCall(endpoint, method = 'GET', data = null) {
+            try {
+                const options = {
+                    method,
+                    headers: { 'Content-Type': 'application/json' }
+                };
+                if (data) options.body = JSON.stringify(data);
+                
+                const response = await fetch(`${API_URL}/api${endpoint}`, options);
+                if (!response.ok) throw new Error(`API Error: ${response.status}`);
+                return await response.json();
+            } catch (error) {
+                showAlert(`Erro: ${error.message}`, 'error');
+                return null;
+            }
+        }
+
+        // Clients
+        async function addClient(e) {
+            e.preventDefault();
+            const data = {
+                name: document.getElementById('client-name').value,
+                email: document.getElementById('client-email').value,
+                phone: document.getElementById('client-phone').value,
+                cep: document.getElementById('client-cep').value,
+                address: document.getElementById('client-address').value,
+                city: document.getElementById('client-city').value
+            };
+            
+            const result = await apiCall('/clients', 'POST', data);
+            if (result) {
+                showAlert('Cliente adicionado com sucesso!');
+                e.target.reset();
+                loadClients();
+            }
+        }
+
+        async function loadClients() {
+            const clients = await apiCall('/clients');
+            if (clients) {
+                const tbody = document.querySelector('#clients-table tbody');
+                tbody.innerHTML = clients.map(c => `
+                    <tr>
+                        <td>${c.name}</td>
+                        <td>${c.email}</td>
+                        <td>${c.phone}</td>
+                        <td><button class="btn btn-small btn-secondary">Editar</button></td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // Shipping
+        async function calculateShipping(e) {
+            e.preventDefault();
+            const data = {
+                cep: document.getElementById('shipping-cep').value,
+                weight: parseFloat(document.getElementById('shipping-weight').value),
+                width: parseFloat(document.getElementById('shipping-width').value),
+                height: parseFloat(document.getElementById('shipping-height').value),
+                length: parseFloat(document.getElementById('shipping-length').value)
+            };
+            
+            const result = await apiCall('/shipping/calculate', 'POST', data);
+            if (result) {
+                document.getElementById('shipping-result').style.display = 'block';
+                document.getElementById('shipping-result-body').innerHTML = result.map(s => `
+                    <tr>
+                        <td>${s.service}</td>
+                        <td>R$ ${s.value.toFixed(2)}</td>
+                        <td>${s.days} dias</td>
+                    </tr>
+                `).join('');
+            }
+        }
+
+        // Labels
+        async function generateLabel(e) {
+            e.preventDefault();
+            const data = {
+                clientId: document.getElementById('label-client').value,
+                employeeId: document.getElementById('label-employee').value,
+                cep: document.getElementById('label-cep').value,
+                weight: parseFloat(document.getElementById('label-weight').value),
+                value: parseFloat(document.getElementById('label-value').value),
+                service: document.getElementById('label-service').value
+            };
+            
+            const result = await apiCall('/labels', 'POST', data);
+            if (result) {
+                showAlert('Etiqueta gerada com sucesso!');
+                e.target.reset();
+            }
+        }
+
+        // Settings
+        async function saveSettings(e) {
+            e.preventDefault();
+            const data = {
+                postcard: document.getElementById('settings-postcard').value,
+                contract: document.getElementById('settings-contract').value,
+                user: document.getElementById('settings-user').value,
+                password: document.getElementById('settings-password').value,
+                originCep: document.getElementById('settings-origin-cep').value,
+                adminCode: document.getElementById('settings-admin-code').value
+            };
+            
+            const result = await apiCall('/settings', 'POST', data);
+            if (result) {
+                showAlert('Configurações salvas com sucesso!');
+            }
+        }
+
+        // Init
+        document.addEventListener('DOMContentLoaded', () => {
+            loadClients();
+        });
+    </script>
+</body>
+</html>

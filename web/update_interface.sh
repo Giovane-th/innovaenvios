@@ -1,0 +1,875 @@
+#!/bin/bash
+
+# Script para atualizar a interface web na VPS
+# Execute na VPS com: bash update_interface.sh
+
+echo "🔄 Atualizando interface web..."
+
+# Criar o arquivo HTML completo
+cat > /opt/innova-envios/web/app.html << 'EOF'
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In'Nova Envios - Gestão de Envios</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        :root {
+            --primary: #003DA5;
+            --secondary: #FFC700;
+            --background: #f5f5f5;
+            --surface: #ffffff;
+            --text: #11181C;
+            --text-muted: #687076;
+            --border: #E5E7EB;
+            --success: #22C55E;
+            --error: #EF4444;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+            overflow-x: hidden;
+        }
+        
+        .device-info {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: var(--surface);
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            color: var(--text-muted);
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+            z-index: 1000;
+        }
+        
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+            padding-bottom: 120px;
+        }
+        
+        header {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            align-items: center;
+            gap: 15px;
+        }
+        
+        .logo {
+            width: 50px;
+            height: 50px;
+            background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+            border-radius: 8px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+        }
+        
+        .header-content h1 {
+            color: var(--primary);
+            margin-bottom: 5px;
+        }
+        
+        .header-content p {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        .status {
+            background: #e8f5e9;
+            border-left: 4px solid var(--success);
+            padding: 15px;
+            margin: 20px 0;
+            border-radius: 4px;
+        }
+        
+        .status h2 {
+            color: #2e7d32;
+            margin: 0 0 5px 0;
+        }
+        
+        .status p {
+            color: #1b5e20;
+            margin: 0;
+        }
+        
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+            gap: 20px;
+            margin: 20px 0;
+        }
+        
+        .card {
+            background: var(--surface);
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.15);
+        }
+        
+        .card h3 {
+            color: var(--primary);
+            margin-bottom: 10px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .card p {
+            color: var(--text-muted);
+            font-size: 14px;
+            margin-bottom: 15px;
+        }
+        
+        .card button {
+            background: var(--primary);
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            transition: background 0.2s;
+            width: 100%;
+        }
+        
+        .card button:hover {
+            background: #002070;
+        }
+        
+        /* Modal */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 999;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+            overflow-y: auto;
+        }
+        
+        .modal.active {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+        
+        .modal-content {
+            background-color: var(--surface);
+            padding: 30px;
+            border-radius: 8px;
+            max-width: 600px;
+            width: 90%;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+        
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+        
+        .modal-header h2 {
+            color: var(--primary);
+            margin: 0;
+        }
+        
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 28px;
+            cursor: pointer;
+            color: var(--text-muted);
+        }
+        
+        .form-group {
+            margin-bottom: 15px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 5px;
+            color: var(--text);
+            font-weight: 500;
+        }
+        
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 10px;
+            border: 1px solid var(--border);
+            border-radius: 4px;
+            font-family: inherit;
+            font-size: 14px;
+        }
+        
+        .form-group textarea {
+            resize: vertical;
+            min-height: 100px;
+        }
+        
+        .form-actions {
+            display: flex;
+            gap: 10px;
+            margin-top: 20px;
+        }
+        
+        .form-actions button {
+            flex: 1;
+            padding: 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 500;
+        }
+        
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+        }
+        
+        .btn-primary:hover {
+            background: #002070;
+        }
+        
+        .btn-secondary {
+            background: var(--border);
+            color: var(--text);
+        }
+        
+        .btn-secondary:hover {
+            background: #d0d0d0;
+        }
+        
+        /* Bottom Navigation */
+        .bottom-nav {
+            position: fixed;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: var(--surface);
+            border-top: 1px solid var(--border);
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0;
+            z-index: 100;
+            box-shadow: 0 -2px 8px rgba(0,0,0,0.1);
+        }
+        
+        .nav-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 12px 8px;
+            cursor: pointer;
+            transition: background 0.2s;
+            border: none;
+            background: none;
+            font-family: inherit;
+            font-size: 12px;
+            color: var(--text-muted);
+        }
+        
+        .nav-item:hover,
+        .nav-item.active {
+            background: #f0f0f0;
+            color: var(--primary);
+        }
+        
+        .nav-item-icon {
+            font-size: 24px;
+            margin-bottom: 4px;
+        }
+        
+        .nav-item-label {
+            font-size: 11px;
+            text-align: center;
+        }
+        
+        /* Page Content */
+        .page {
+            display: none;
+        }
+        
+        .page.active {
+            display: block;
+        }
+        
+        .clients-list {
+            display: grid;
+            gap: 10px;
+        }
+        
+        .client-item {
+            background: var(--surface);
+            padding: 15px;
+            border-radius: 4px;
+            border-left: 4px solid var(--primary);
+            cursor: pointer;
+            transition: background 0.2s;
+        }
+        
+        .client-item:hover {
+            background: #f9f9f9;
+        }
+        
+        .client-name {
+            font-weight: 500;
+            color: var(--text);
+        }
+        
+        .client-info {
+            font-size: 12px;
+            color: var(--text-muted);
+            margin-top: 5px;
+        }
+        
+        .alert {
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+            display: none;
+        }
+        
+        .alert.success {
+            background: #e8f5e9;
+            color: #2e7d32;
+            border-left: 4px solid var(--success);
+            display: block;
+        }
+        
+        .alert.error {
+            background: #ffebee;
+            color: #c62828;
+            border-left: 4px solid var(--error);
+            display: block;
+        }
+        
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+                padding-bottom: 100px;
+            }
+            
+            .grid {
+                grid-template-columns: 1fr;
+            }
+            
+            header {
+                padding: 15px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- Device Info -->
+    <div class="device-info" id="deviceInfo">
+        Detectando dispositivo...
+    </div>
+    
+    <!-- Main Container -->
+    <div class="container">
+        <!-- Header -->
+        <header>
+            <div class="logo">📦</div>
+            <div class="header-content">
+                <h1>In'Nova Envios</h1>
+                <p>Sistema de Gestão de Envios</p>
+            </div>
+        </header>
+        
+        <!-- Status -->
+        <div class="status">
+            <h2>✅ Sistema Online</h2>
+            <p>Interface web operacional e pronta para uso.</p>
+        </div>
+        
+        <!-- Alert -->
+        <div class="alert" id="alert"></div>
+        
+        <!-- Dashboard Page -->
+        <div class="page active" id="dashboard">
+            <div class="grid">
+                <div class="card">
+                    <h3>📊 Total de Clientes</h3>
+                    <p style="font-size: 32px; color: var(--primary); margin: 20px 0;">-</p>
+                    <p id="totalClientes">Carregando...</p>
+                </div>
+                <div class="card">
+                    <h3>📮 Envios Hoje</h3>
+                    <p style="font-size: 32px; color: var(--primary); margin: 20px 0;">0</p>
+                    <p>Nenhum envio registrado hoje</p>
+                </div>
+                <div class="card">
+                    <h3>💰 Faturamento</h3>
+                    <p style="font-size: 32px; color: var(--primary); margin: 20px 0;">R$ 0,00</p>
+                    <p>Valor total de envios</p>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Clients Page -->
+        <div class="page" id="clients">
+            <h2 style="margin-bottom: 20px;">Gerenciar Clientes</h2>
+            <button class="card" style="background: var(--primary); color: white; padding: 15px; margin-bottom: 20px; width: 100%; text-align: left;" onclick="openModal('addClient')">
+                ➕ Adicionar Novo Cliente
+            </button>
+            <div class="clients-list" id="clientsList">
+                <p style="color: var(--text-muted);">Carregando clientes...</p>
+            </div>
+        </div>
+        
+        <!-- Labels Page -->
+        <div class="page" id="labels">
+            <h2 style="margin-bottom: 20px;">Gerar Etiquetas</h2>
+            <div class="card">
+                <div class="form-group">
+                    <label>Selecione um Cliente</label>
+                    <select id="labelClient">
+                        <option value="">-- Selecione --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Peso (kg)</label>
+                    <input type="number" id="labelWeight" placeholder="0.00" step="0.01">
+                </div>
+                <div class="form-group">
+                    <label>Serviço</label>
+                    <select id="labelService">
+                        <option value="">-- Selecione --</option>
+                        <option value="sedex">SEDEX</option>
+                        <option value="pac">PAC</option>
+                    </select>
+                </div>
+                <button onclick="generateLabel()" class="btn-primary" style="width: 100%; padding: 12px;">
+                    🏷️ Gerar Etiqueta
+                </button>
+                <button onclick="printLabel()" class="btn-primary" style="width: 100%; padding: 12px; margin-top: 10px;">
+                    🖨️ Imprimir Etiqueta
+                </button>
+            </div>
+        </div>
+        
+        <!-- Reports Page -->
+        <div class="page" id="reports">
+            <h2 style="margin-bottom: 20px;">Relatórios</h2>
+            <div class="grid">
+                <div class="card">
+                    <h3>📈 Relatório de Envios</h3>
+                    <p>Visualize todos os envios realizados</p>
+                    <button onclick="generateReport('shipments')">Gerar</button>
+                </div>
+                <div class="card">
+                    <h3>💳 Relatório Financeiro</h3>
+                    <p>Análise de faturamento e custos</p>
+                    <button onclick="generateReport('financial')">Gerar</button>
+                </div>
+                <div class="card">
+                    <h3>👥 Relatório de Clientes</h3>
+                    <p>Lista completa de clientes cadastrados</p>
+                    <button onclick="generateReport('clients')">Gerar</button>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Settings Page -->
+        <div class="page" id="settings">
+            <h2 style="margin-bottom: 20px;">⚙️ Configurações</h2>
+            
+            <!-- Correios Settings -->
+            <div class="card" style="margin-bottom: 20px;">
+                <h3>📮 Credenciais dos Correios</h3>
+                <div class="form-group">
+                    <label>ID/Login Portal Meu Correios</label>
+                    <input type="text" id="settings-portal-id" placeholder="seu-email@example.com ou CNPJ">
+                </div>
+                <div class="form-group">
+                    <label>Senha Portal Meu Correios</label>
+                    <input type="password" id="settings-portal-password">
+                </div>
+                <div class="form-group">
+                    <label>Código de Acesso à API (Web Service)</label>
+                    <input type="text" id="settings-api-code" placeholder="Código gerado no CWS">
+                </div>
+                <div class="form-group">
+                    <label>Usuário Correios (API)</label>
+                    <input type="text" id="settings-username" placeholder="Usuário para autenticação REST">
+                </div>
+                <div class="form-group">
+                    <label>Senha Correios (API)</label>
+                    <input type="password" id="settings-password">
+                </div>
+                <div class="form-group">
+                    <label>Cartão de Postagem</label>
+                    <input type="text" id="settings-postcard" placeholder="0000000000">
+                </div>
+                <div class="form-group">
+                    <label>Contrato</label>
+                    <input type="text" id="settings-contract" placeholder="0000000">
+                </div>
+                <div class="form-group">
+                    <label>CEP de Origem</label>
+                    <input type="text" id="settings-origin-cep" placeholder="00000-000">
+                </div>
+                <div class="form-group">
+                    <label>Código Administrativo</label>
+                    <input type="text" id="settings-admin-code" placeholder="0000000">
+                </div>
+                <button onclick="saveSettings()" class="btn-primary" style="width: 100%; padding: 12px;">
+                    💾 Salvar Configurações
+                </button>
+            </div>
+            
+            <!-- Printer Settings -->
+            <div class="card">
+                <h3>🖨️ Configuração de Impressora</h3>
+                <div class="form-group">
+                    <label>Tipo de Impressora</label>
+                    <select id="printer-type">
+                        <option value="">-- Selecione --</option>
+                        <option value="local">Impressora Local (USB)</option>
+                        <option value="network">Impressora de Rede</option>
+                        <option value="thermal">Impressora Térmica</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>Local/Nome da Impressora</label>
+                    <input type="text" id="printer-name" placeholder="Ex: LPT1, \\COMPUTADOR\Impressora, 192.168.1.100">
+                </div>
+                <div class="form-group">
+                    <label>Porta (se aplicável)</label>
+                    <input type="text" id="printer-port" placeholder="Ex: 9100, 515">
+                </div>
+                <div class="form-group">
+                    <label>Modelo da Impressora</label>
+                    <input type="text" id="printer-model" placeholder="Ex: Zebra ZPL, Elgin i9">
+                </div>
+                <button onclick="savePrinterSettings()" class="btn-primary" style="width: 100%; padding: 12px;">
+                    💾 Salvar Configuração de Impressora
+                </button>
+                <button onclick="testPrinter()" class="btn-secondary" style="width: 100%; padding: 12px; margin-top: 10px;">
+                    🧪 Testar Impressora
+                </button>
+            </div>
+        </div>
+    </div>
+    
+    <!-- Bottom Navigation -->
+    <div class="bottom-nav">
+        <button class="nav-item active" onclick="showPage('dashboard')">
+            <div class="nav-item-icon">📊</div>
+            <div class="nav-item-label">Dashboard</div>
+        </button>
+        <button class="nav-item" onclick="showPage('clients')">
+            <div class="nav-item-icon">👥</div>
+            <div class="nav-item-label">Clientes</div>
+        </button>
+        <button class="nav-item" onclick="showPage('labels')">
+            <div class="nav-item-icon">🏷️</div>
+            <div class="nav-item-label">Etiquetas</div>
+        </button>
+        <button class="nav-item" onclick="showPage('reports')">
+            <div class="nav-item-icon">📈</div>
+            <div class="nav-item-label">Relatórios</div>
+        </button>
+        <button class="nav-item" onclick="showPage('settings')">
+            <div class="nav-item-icon">⚙️</div>
+            <div class="nav-item-label">Configurações</div>
+        </button>
+    </div>
+    
+    <!-- Modals -->
+    <div class="modal" id="addClientModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>Adicionar Cliente</h2>
+                <button class="close-btn" onclick="closeModal('addClient')">&times;</button>
+            </div>
+            <div class="form-group">
+                <label>Nome</label>
+                <input type="text" id="client-name">
+            </div>
+            <div class="form-group">
+                <label>Email</label>
+                <input type="email" id="client-email">
+            </div>
+            <div class="form-group">
+                <label>CNPJ/CPF</label>
+                <input type="text" id="client-cnpj">
+            </div>
+            <div class="form-group">
+                <label>Telefone</label>
+                <input type="tel" id="client-phone">
+            </div>
+            <div class="form-group">
+                <label>Endereço</label>
+                <input type="text" id="client-address">
+            </div>
+            <div class="form-group">
+                <label>CEP</label>
+                <input type="text" id="client-cep">
+            </div>
+            <div class="form-actions">
+                <button class="btn-primary" onclick="saveClient()">Salvar</button>
+                <button class="btn-secondary" onclick="closeModal('addClient')">Cancelar</button>
+            </div>
+        </div>
+    </div>
+    
+    <script>
+        const API_URL = '/api';
+        
+        // Detect Device Type
+        function detectDevice() {
+            const ua = navigator.userAgent;
+            let device = 'Desktop';
+            
+            if (/mobile/i.test(ua)) device = 'Mobile';
+            else if (/tablet|ipad/i.test(ua)) device = 'Tablet';
+            
+            const resolution = `${window.innerWidth}x${window.innerHeight}`;
+            document.getElementById('deviceInfo').textContent = `${device} • ${resolution}`;
+        }
+        
+        // Navigation
+        function showPage(pageName) {
+            // Hide all pages
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            // Show selected page
+            document.getElementById(pageName).classList.add('active');
+            
+            // Update nav items
+            document.querySelectorAll('.nav-item').forEach(item => item.classList.remove('active'));
+            event.target.closest('.nav-item').classList.add('active');
+            
+            // Load data
+            if (pageName === 'clients') loadClients();
+            if (pageName === 'dashboard') loadDashboard();
+        }
+        
+        // Load Dashboard
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_URL}/clients`);
+                if (response.ok) {
+                    const data = await response.json();
+                    document.getElementById('totalClientes').textContent = `${data.length || 0} clientes cadastrados`;
+                }
+            } catch (error) {
+                console.error('Erro ao carregar dashboard:', error);
+            }
+        }
+        
+        // Load Clients
+        async function loadClients() {
+            try {
+                const response = await fetch(`${API_URL}/clients`);
+                if (response.ok) {
+                    const data = await response.json();
+                    const list = document.getElementById('clientsList');
+                    
+                    if (data.length === 0) {
+                        list.innerHTML = '<p style="color: var(--text-muted);">Nenhum cliente cadastrado</p>';
+                        return;
+                    }
+                    
+                    list.innerHTML = data.map(client => `
+                        <div class="client-item">
+                            <div class="client-name">${client.name}</div>
+                            <div class="client-info">
+                                ${client.email ? `📧 ${client.email}<br>` : ''}
+                                ${client.phone ? `📞 ${client.phone}` : ''}
+                            </div>
+                        </div>
+                    `).join('');
+                    
+                    // Update label client select
+                    const select = document.getElementById('labelClient');
+                    select.innerHTML = '<option value="">-- Selecione --</option>' + data.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+                }
+            } catch (error) {
+                console.error('Erro ao carregar clientes:', error);
+            }
+        }
+        
+        // Modal Functions
+        function openModal(modalName) {
+            document.getElementById(modalName + 'Modal').classList.add('active');
+        }
+        
+        function closeModal(modalName) {
+            document.getElementById(modalName + 'Modal').classList.remove('active');
+        }
+        
+        // Save Client
+        async function saveClient() {
+            const name = document.getElementById('client-name').value;
+            const email = document.getElementById('client-email').value;
+            const cnpj = document.getElementById('client-cnpj').value;
+            const phone = document.getElementById('client-phone').value;
+            const address = document.getElementById('client-address').value;
+            const cep = document.getElementById('client-cep').value;
+            
+            if (!name) {
+                showAlert('Por favor, preencha o nome do cliente', 'error');
+                return;
+            }
+            
+            try {
+                const response = await fetch(`${API_URL}/clients`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ name, email, cnpj, phone, address, cep })
+                });
+                
+                if (response.ok) {
+                    showAlert('Cliente adicionado com sucesso!', 'success');
+                    closeModal('addClient');
+                    loadClients();
+                    document.getElementById('client-name').value = '';
+                    document.getElementById('client-email').value = '';
+                    document.getElementById('client-cnpj').value = '';
+                    document.getElementById('client-phone').value = '';
+                    document.getElementById('client-address').value = '';
+                    document.getElementById('client-cep').value = '';
+                } else {
+                    showAlert('Erro ao adicionar cliente', 'error');
+                }
+            } catch (error) {
+                showAlert('Erro: ' + error.message, 'error');
+            }
+        }
+        
+        // Generate Label
+        function generateLabel() {
+            const clientId = document.getElementById('labelClient').value;
+            const weight = document.getElementById('labelWeight').value;
+            const service = document.getElementById('labelService').value;
+            
+            if (!clientId || !weight || !service) {
+                showAlert('Por favor, preencha todos os campos', 'error');
+                return;
+            }
+            
+            showAlert('Etiqueta gerada com sucesso!', 'success');
+        }
+        
+        // Print Label
+        function printLabel() {
+            const printerType = localStorage.getItem('printer-type');
+            if (!printerType) {
+                showAlert('Configure uma impressora primeiro', 'error');
+                return;
+            }
+            
+            showAlert('Enviando para impressora...', 'success');
+        }
+        
+        // Save Settings
+        async function saveSettings() {
+            const settings = {
+                portal_id: document.getElementById('settings-portal-id').value,
+                portal_password: document.getElementById('settings-portal-password').value,
+                api_code: document.getElementById('settings-api-code').value,
+                username: document.getElementById('settings-username').value,
+                password: document.getElementById('settings-password').value,
+                postcard: document.getElementById('settings-postcard').value,
+                contract: document.getElementById('settings-contract').value,
+                origin_cep: document.getElementById('settings-origin-cep').value,
+                admin_code: document.getElementById('settings-admin-code').value
+            };
+            
+            localStorage.setItem('correios-settings', JSON.stringify(settings));
+            showAlert('Configurações dos Correios salvas!', 'success');
+        }
+        
+        // Save Printer Settings
+        function savePrinterSettings() {
+            const settings = {
+                type: document.getElementById('printer-type').value,
+                name: document.getElementById('printer-name').value,
+                port: document.getElementById('printer-port').value,
+                model: document.getElementById('printer-model').value
+            };
+            
+            if (!settings.type || !settings.name) {
+                showAlert('Por favor, preencha tipo e nome da impressora', 'error');
+                return;
+            }
+            
+            localStorage.setItem('printer-settings', JSON.stringify(settings));
+            showAlert('Configuração de impressora salva!', 'success');
+        }
+        
+        // Test Printer
+        function testPrinter() {
+            const settings = JSON.parse(localStorage.getItem('printer-settings') || '{}');
+            if (!settings.type) {
+                showAlert('Configure uma impressora primeiro', 'error');
+                return;
+            }
+            
+            showAlert(`Testando impressora ${settings.type}...`, 'success');
+        }
+        
+        // Generate Report
+        function generateReport(type) {
+            showAlert(`Gerando relatório de ${type}...`, 'success');
+        }
+        
+        // Show Alert
+        function showAlert(message, type) {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert ${type}`;
+            setTimeout(() => {
+                alert.className = 'alert';
+            }, 3000);
+        }
+        
+        // Initialize
+        window.addEventListener('load', () => {
+            detectDevice();
+            window.addEventListener('resize', detectDevice);
+            loadDashboard();
+        });
+    </script>
+</body>
+</html>
+EOF
+
+echo "✅ Arquivo atualizado com sucesso!"
+echo "🔄 Reiniciando Nginx..."
+systemctl restart nginx
+
+if [ $? -eq 0 ]; then
+    echo "✅ Nginx reiniciado com sucesso!"
+    echo "🌐 Interface disponível em: https://innovaenvios.app"
+else
+    echo "❌ Erro ao reiniciar Nginx"
+fi

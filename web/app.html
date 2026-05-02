@@ -1,0 +1,790 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>In'Nova Envios - Gestão de Envios</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        :root {
+            --primary: #003DA5;
+            --secondary: #FFC700;
+            --background: #f5f5f5;
+            --surface: #ffffff;
+            --text: #11181C;
+            --text-muted: #687076;
+            --border: #E5E7EB;
+            --success: #22C55E;
+            --error: #EF4444;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: var(--background);
+            color: var(--text);
+        }
+        .container { max-width: 1400px; margin: 0 auto; display: flex; height: 100vh; }
+        
+        /* Sidebar */
+        .sidebar {
+            width: 250px;
+            background-color: var(--surface);
+            border-right: 1px solid var(--border);
+            padding: 20px;
+            overflow-y: auto;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.05);
+        }
+        .sidebar h1 {
+            font-size: 18px;
+            margin-bottom: 30px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        .sidebar nav {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+        .sidebar nav button {
+            background: none;
+            border: none;
+            padding: 12px 16px;
+            text-align: left;
+            cursor: pointer;
+            border-radius: 8px;
+            color: var(--text);
+            font-size: 14px;
+            transition: all 0.2s;
+            border-left: 3px solid transparent;
+        }
+        .sidebar nav button:hover,
+        .sidebar nav button.active {
+            background-color: var(--background);
+            border-left-color: var(--primary);
+            color: var(--primary);
+        }
+        
+        /* Main Content */
+        .main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+        }
+        header {
+            background-color: var(--surface);
+            border-bottom: 1px solid var(--border);
+            padding: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+        }
+        header h2 {
+            color: var(--primary);
+            font-size: 24px;
+        }
+        
+        .content {
+            flex: 1;
+            overflow-y: auto;
+            padding: 20px;
+        }
+        
+        .page {
+            display: none;
+        }
+        .page.active {
+            display: block;
+        }
+        
+        /* Cards */
+        .card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 1px 3px rgba(0,0,0,0.05);
+        }
+        .card h3 {
+            color: var(--primary);
+            margin-bottom: 16px;
+            font-size: 18px;
+        }
+        
+        /* Forms */
+        .form-group {
+            margin-bottom: 16px;
+        }
+        label {
+            display: block;
+            margin-bottom: 6px;
+            font-weight: 500;
+            color: var(--text);
+            font-size: 14px;
+        }
+        input, select, textarea {
+            width: 100%;
+            padding: 10px 12px;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            font-size: 14px;
+            font-family: inherit;
+        }
+        input:focus, select:focus, textarea:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(0, 61, 165, 0.1);
+        }
+        
+        /* Buttons */
+        .btn {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .btn-primary {
+            background-color: var(--primary);
+            color: white;
+        }
+        .btn-primary:hover {
+            background-color: #0029a0;
+        }
+        .btn-secondary {
+            background-color: var(--secondary);
+            color: var(--text);
+        }
+        .btn-secondary:hover {
+            background-color: #ffb800;
+        }
+        .btn-small {
+            padding: 6px 12px;
+            font-size: 12px;
+        }
+        
+        /* Tables */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 16px;
+        }
+        th, td {
+            padding: 12px;
+            text-align: left;
+            border-bottom: 1px solid var(--border);
+        }
+        th {
+            background-color: var(--background);
+            font-weight: 600;
+        }
+        tr:hover {
+            background-color: var(--background);
+        }
+        
+        /* Grid */
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+            gap: 16px;
+            margin-bottom: 16px;
+        }
+        
+        /* Stats */
+        .stats {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px;
+            margin-bottom: 20px;
+        }
+        .stat-card {
+            background-color: var(--surface);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 20px;
+            text-align: center;
+        }
+        .stat-value {
+            font-size: 32px;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 8px 0;
+        }
+        .stat-label {
+            color: var(--text-muted);
+            font-size: 14px;
+        }
+        
+        /* Alert */
+        .alert {
+            padding: 12px 16px;
+            border-radius: 8px;
+            margin-bottom: 16px;
+            display: none;
+        }
+        .alert.show {
+            display: block;
+        }
+        .alert-success {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+            border: 1px solid var(--success);
+        }
+        .alert-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+            border: 1px solid var(--error);
+        }
+        
+        /* Badge */
+        .badge {
+            display: inline-block;
+            padding: 4px 12px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+        .badge-success {
+            background-color: rgba(34, 197, 94, 0.1);
+            color: var(--success);
+        }
+        .badge-error {
+            background-color: rgba(239, 68, 68, 0.1);
+            color: var(--error);
+        }
+        
+        /* Print */
+        @media print {
+            .sidebar, header, .btn { display: none; }
+            .content { padding: 0; }
+            .card { box-shadow: none; border: none; page-break-inside: avoid; }
+        }
+        
+        /* Responsive */
+        @media (max-width: 768px) {
+            .container { flex-direction: column; }
+            .sidebar { width: 100%; max-height: 100px; overflow-x: auto; }
+            .sidebar nav { flex-direction: row; }
+            .grid { grid-template-columns: 1fr; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Sidebar -->
+        <aside class="sidebar">
+            <h1>📦 In'Nova</h1>
+            <nav>
+                <button class="nav-btn active" data-page="dashboard">📊 Dashboard</button>
+                <button class="nav-btn" data-page="clients">👥 Clientes</button>
+                <button class="nav-btn" data-page="shipping">📮 Fretes</button>
+                <button class="nav-btn" data-page="labels">🏷️ Etiquetas</button>
+                <button class="nav-btn" data-page="reports">📈 Relatórios</button>
+                <button class="nav-btn" data-page="settings">⚙️ Configurações</button>
+            </nav>
+        </aside>
+
+        <!-- Main Content -->
+        <div class="main">
+            <header>
+                <h2 id="page-title">Dashboard</h2>
+            </header>
+
+            <div class="content">
+                <div id="alert" class="alert"></div>
+
+                <!-- Dashboard -->
+                <div id="dashboard" class="page active">
+                    <div class="stats">
+                        <div class="stat-card">
+                            <div class="stat-label">Clientes</div>
+                            <div class="stat-value" id="stat-clients">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Etiquetas Hoje</div>
+                            <div class="stat-value" id="stat-today">0</div>
+                        </div>
+                        <div class="stat-card">
+                            <div class="stat-label">Total Enviado</div>
+                            <div class="stat-value" id="stat-total">R$ 0,00</div>
+                        </div>
+                    </div>
+
+                    <div class="card">
+                        <h3>Últimas Etiquetas</h3>
+                        <table id="recent-labels">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Serviço</th>
+                                    <th>Valor</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="5" style="text-align: center;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Clients -->
+                <div id="clients" class="page">
+                    <div class="card">
+                        <h3>Novo Cliente</h3>
+                        <form onsubmit="addClient(event)">
+                            <div class="grid">
+                                <div class="form-group">
+                                    <label>Nome *</label>
+                                    <input type="text" id="client-name" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Email *</label>
+                                    <input type="email" id="client-email" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Telefone</label>
+                                    <input type="tel" id="client-phone">
+                                </div>
+                                <div class="form-group">
+                                    <label>CEP</label>
+                                    <input type="text" id="client-cep" placeholder="00000-000">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Adicionar Cliente</button>
+                        </form>
+                    </div>
+
+                    <div class="card">
+                        <h3>Clientes Cadastrados</h3>
+                        <table id="clients-table">
+                            <thead>
+                                <tr>
+                                    <th>Nome</th>
+                                    <th>Email</th>
+                                    <th>Telefone</th>
+                                    <th>Ações</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                <tr><td colspan="4" style="text-align: center;">Carregando...</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Shipping -->
+                <div id="shipping" class="page">
+                    <div class="card">
+                        <h3>Calcular Frete</h3>
+                        <form onsubmit="calculateShipping(event)">
+                            <div class="grid">
+                                <div class="form-group">
+                                    <label>CEP Destino *</label>
+                                    <input type="text" id="shipping-cep" placeholder="00000-000" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Peso (kg) *</label>
+                                    <input type="number" id="shipping-weight" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Largura (cm) *</label>
+                                    <input type="number" id="shipping-width" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Altura (cm) *</label>
+                                    <input type="number" id="shipping-height" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Comprimento (cm) *</label>
+                                    <input type="number" id="shipping-length" step="0.01" required>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Calcular Frete</button>
+                        </form>
+                        <div id="shipping-result" style="margin-top: 20px; display: none;">
+                            <h4>Resultado</h4>
+                            <table>
+                                <thead>
+                                    <tr>
+                                        <th>Serviço</th>
+                                        <th>Valor</th>
+                                        <th>Prazo</th>
+                                    </tr>
+                                </thead>
+                                <tbody id="shipping-result-body"></tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Labels -->
+                <div id="labels" class="page">
+                    <div class="card">
+                        <h3>Gerar Etiqueta</h3>
+                        <form onsubmit="generateLabel(event)">
+                            <div class="grid">
+                                <div class="form-group">
+                                    <label>Cliente *</label>
+                                    <select id="label-client" required>
+                                        <option value="">Selecione um cliente</option>
+                                    </select>
+                                </div>
+                                <div class="form-group">
+                                    <label>CEP Destino *</label>
+                                    <input type="text" id="label-cep" placeholder="00000-000" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Peso (kg) *</label>
+                                    <input type="number" id="label-weight" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Valor (R$) *</label>
+                                    <input type="number" id="label-value" step="0.01" required>
+                                </div>
+                                <div class="form-group">
+                                    <label>Serviço *</label>
+                                    <select id="label-service" required>
+                                        <option value="04014">PAC</option>
+                                        <option value="04162">SEDEX</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Gerar Etiqueta</button>
+                            <button type="button" class="btn btn-secondary" onclick="printLabel()">🖨️ Imprimir</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Reports -->
+                <div id="reports" class="page">
+                    <div class="card">
+                        <h3>Relatório de Envios</h3>
+                        <div class="grid">
+                            <div class="form-group">
+                                <label>Data Inicial</label>
+                                <input type="date" id="report-start">
+                            </div>
+                            <div class="form-group">
+                                <label>Data Final</label>
+                                <input type="date" id="report-end">
+                            </div>
+                        </div>
+                        <button class="btn btn-primary" onclick="generateReport()">Gerar Relatório</button>
+                        <table id="reports-table" style="margin-top: 20px; display: none;">
+                            <thead>
+                                <tr>
+                                    <th>Cliente</th>
+                                    <th>Serviço</th>
+                                    <th>Valor</th>
+                                    <th>Data</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody></tbody>
+                        </table>
+                    </div>
+                </div>
+
+                <!-- Settings -->
+                <div id="settings" class="page">
+                    <div class="card">
+                        <h3>Configurações Correios</h3>
+                        <form onsubmit="saveSettings(event)">
+                            <div class="grid">
+                                <div class="form-group">
+                                    <label>Cartão de Postagem</label>
+                                    <input type="text" id="settings-postcard" placeholder="0000000000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Contrato</label>
+                                    <input type="text" id="settings-contract" placeholder="0000000">
+                                </div>
+                                <div class="form-group">
+                                    <label>ID/Login Portal Meu Correios</label>
+                                    <input type="text" id="settings-portal-id" placeholder="seu-email@example.com ou CNPJ">
+                                </div>
+                                <div class="form-group">
+                                    <label>Senha Portal Meu Correios</label>
+                                    <input type="password" id="settings-portal-password">
+                                </div>
+                                <div class="form-group">
+                                    <label>Código de Acesso à API (Web Service)</label>
+                                    <input type="text" id="settings-api-code" placeholder="Código gerado no CWS">
+                                </div>
+                                <div class="form-group">
+                                    <label>Usuário Correios (API)</label>
+                                    <input type="text" id="settings-username" placeholder="Usuário para autenticação REST">
+                                </div>
+                                <div class="form-group">
+                                    <label>Senha Correios (API)</label>
+                                    <input type="password" id="settings-password">
+                                </div>
+                                <div class="form-group">
+                                    <label>CEP de Origem</label>
+                                    <input type="text" id="settings-origin-cep" placeholder="00000-000">
+                                </div>
+                                <div class="form-group">
+                                    <label>Código Administrativo</label>
+                                    <input type="text" id="settings-admin-code" placeholder="0000000">
+                                </div>
+                            </div>
+                            <button type="submit" class="btn btn-primary">Salvar Configurações</button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_URL = '/api';
+
+        // Navigation
+        document.querySelectorAll('.nav-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const pageId = btn.dataset.page;
+                showPage(pageId);
+                
+                document.querySelectorAll('.nav-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                
+                document.getElementById('page-title').textContent = btn.textContent.trim();
+            });
+        });
+
+        function showPage(pageId) {
+            document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+            document.getElementById(pageId).classList.add('active');
+            
+            if (pageId === 'dashboard') loadDashboard();
+            if (pageId === 'clients') loadClients();
+            if (pageId === 'labels') loadClients(); // populate select
+        }
+
+        // Alert
+        function showAlert(message, type = 'success') {
+            const alert = document.getElementById('alert');
+            alert.textContent = message;
+            alert.className = `alert show alert-${type}`;
+            setTimeout(() => alert.classList.remove('show'), 3000);
+        }
+
+        // Dashboard
+        async function loadDashboard() {
+            try {
+                const response = await fetch(`${API_URL}/dashboard`);
+                if (!response.ok) throw new Error('Erro ao carregar dashboard');
+                const data = await response.json();
+                
+                document.getElementById('stat-clients').textContent = data.clients || 0;
+                document.getElementById('stat-today').textContent = data.today || 0;
+                document.getElementById('stat-total').textContent = `R$ ${(data.total || 0).toFixed(2)}`;
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // Clients
+        async function loadClients() {
+            try {
+                const response = await fetch(`${API_URL}/clients`);
+                if (!response.ok) throw new Error('Erro ao carregar clientes');
+                const clients = await response.json();
+                
+                const tbody = document.querySelector('#clients-table tbody');
+                tbody.innerHTML = clients.length ? clients.map(c => `
+                    <tr>
+                        <td>${c.name}</td>
+                        <td>${c.email}</td>
+                        <td>${c.phone || '-'}</td>
+                        <td>
+                            <button class="btn btn-small" onclick="deleteClient(${c.id})">Deletar</button>
+                        </td>
+                    </tr>
+                `).join('') : '<tr><td colspan="4">Sem clientes</td></tr>';
+
+                const select = document.getElementById('label-client');
+                select.innerHTML = '<option value="">Selecione um cliente</option>' + 
+                    clients.map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        async function addClient(e) {
+            e.preventDefault();
+            try {
+                const response = await fetch(`${API_URL}/clients`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        name: document.getElementById('client-name').value,
+                        email: document.getElementById('client-email').value,
+                        phone: document.getElementById('client-phone').value,
+                        cep: document.getElementById('client-cep').value,
+                    })
+                });
+                
+                if (response.ok) {
+                    showAlert('Cliente adicionado com sucesso');
+                    e.target.reset();
+                    loadClients();
+                } else {
+                    showAlert('Erro ao adicionar cliente', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showAlert('Erro ao adicionar cliente', 'error');
+            }
+        }
+
+        async function deleteClient(id) {
+            if (!confirm('Tem certeza?')) return;
+            try {
+                const response = await fetch(`${API_URL}/clients/${id}`, { method: 'DELETE' });
+                if (response.ok) {
+                    showAlert('Cliente deletado');
+                    loadClients();
+                }
+            } catch (error) {
+                console.error(error);
+            }
+        }
+
+        // Shipping
+        async function calculateShipping(e) {
+            e.preventDefault();
+            try {
+                const response = await fetch(`${API_URL}/shipping/calculate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        cep: document.getElementById('shipping-cep').value,
+                        weight: parseFloat(document.getElementById('shipping-weight').value),
+                        width: parseFloat(document.getElementById('shipping-width').value),
+                        height: parseFloat(document.getElementById('shipping-height').value),
+                        length: parseFloat(document.getElementById('shipping-length').value),
+                    })
+                });
+                
+                const data = await response.json();
+                const tbody = document.querySelector('#shipping-result-body');
+                tbody.innerHTML = data.services ? data.services.map(s => `
+                    <tr>
+                        <td>${s.name}</td>
+                        <td>R$ ${s.value.toFixed(2)}</td>
+                        <td>${s.deadline} dias</td>
+                    </tr>
+                `).join('') : '<tr><td colspan="3">Nenhum serviço</td></tr>';
+                
+                document.getElementById('shipping-result').style.display = 'block';
+            } catch (error) {
+                console.error(error);
+                showAlert('Erro ao calcular frete', 'error');
+            }
+        }
+
+        // Labels
+        async function generateLabel(e) {
+            e.preventDefault();
+            try {
+                const response = await fetch(`${API_URL}/labels/generate`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        client_id: document.getElementById('label-client').value,
+                        cep: document.getElementById('label-cep').value,
+                        weight: parseFloat(document.getElementById('label-weight').value),
+                        value: parseFloat(document.getElementById('label-value').value),
+                        service: document.getElementById('label-service').value,
+                    })
+                });
+                
+                if (response.ok) {
+                    showAlert('Etiqueta gerada com sucesso');
+                    e.target.reset();
+                } else {
+                    showAlert('Erro ao gerar etiqueta', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showAlert('Erro ao gerar etiqueta', 'error');
+            }
+        }
+
+        function printLabel() {
+            window.print();
+        }
+
+        // Reports
+        async function generateReport() {
+            try {
+                const startDate = document.getElementById('report-start').value;
+                const endDate = document.getElementById('report-end').value;
+                
+                if (!startDate || !endDate) {
+                    showAlert('Selecione as datas', 'error');
+                    return;
+                }
+
+                const response = await fetch(`${API_URL}/reports?start=${startDate}&end=${endDate}`);
+                const data = await response.json();
+                
+                const tbody = document.querySelector('#reports-table tbody');
+                tbody.innerHTML = data.shipments ? data.shipments.map(s => `
+                    <tr>
+                        <td>${s.client}</td>
+                        <td>${s.service}</td>
+                        <td>R$ ${s.value.toFixed(2)}</td>
+                        <td>${new Date(s.date).toLocaleDateString('pt-BR')}</td>
+                        <td><span class="badge badge-${s.status === 'delivered' ? 'success' : 'error'}">${s.status}</span></td>
+                    </tr>
+                `).join('') : '<tr><td colspan="5">Sem dados</td></tr>';
+                
+                document.getElementById('reports-table').style.display = 'table';
+            } catch (error) {
+                console.error(error);
+                showAlert('Erro ao gerar relatório', 'error');
+            }
+        }
+
+        // Settings
+        async function saveSettings(e) {
+            e.preventDefault();
+            try {
+                const response = await fetch(`${API_URL}/settings`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        postcard: document.getElementById('settings-postcard').value,
+                        contract: document.getElementById('settings-contract').value,
+                        portal_id: document.getElementById('settings-portal-id').value,
+                        portal_password: document.getElementById('settings-portal-password').value,
+                        api_code: document.getElementById('settings-api-code').value,
+                        username: document.getElementById('settings-username').value,
+                        password: document.getElementById('settings-password').value,
+                        origin_cep: document.getElementById('settings-origin-cep').value,
+                        admin_code: document.getElementById('settings-admin-code').value,
+                    })
+                });
+                
+                if (response.ok) {
+                    showAlert('Configurações salvas');
+                } else {
+                    showAlert('Erro ao salvar', 'error');
+                }
+            } catch (error) {
+                console.error(error);
+                showAlert('Erro ao salvar', 'error');
+            }
+        }
+
+        // Load initial data
+        loadDashboard();
+    </script>
+</body>
+</html>
