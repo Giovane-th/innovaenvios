@@ -160,3 +160,14 @@
 - [ ] Validar autenticação (login/logout)
 - [ ] Testar integração com Correios
 - [ ] Validar suporte a impressora USB
+
+## Fase de Correção de Bugs - Maio 2026
+
+- [x] Regenerar ícones PNG (corrigido erro de JPEG)
+- [x] Corrigir roteamento das tabs (remover paths com ../)
+- [x] Criar telas faltantes (clients, reports, tracking)
+- [x] Verificar mapeamento de ícones SF Symbols
+- [ ] Resolver erro residual "Cannot read properties of undefined"
+- [ ] Testar build do Android com ícones PNG válidos
+- [ ] Testar build do iOS
+- [ ] Publicar APK/IPA para testes
