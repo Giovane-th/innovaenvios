@@ -576,6 +576,42 @@
                     <div id="clientSearchResults" style="margin-top: 10px;"></div>
                 </div>
                 
+                <!-- Informações de Envio -->
+                <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
+                    <h4 style="color: var(--primary); margin-bottom: 15px;">📬 Informações de Envio</h4>
+                    
+                    <div class="form-group">
+                        <label>Email</label>
+                        <input type="email" id="labelEmail" placeholder="email@exemplo.com" readonly style="background: #f5f5f5;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Telefone</label>
+                        <input type="tel" id="labelPhone" placeholder="(00) 0000-0000" readonly style="background: #f5f5f5;">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Endereço</label>
+                        <input type="text" id="labelAddress" placeholder="Rua, número" readonly style="background: #f5f5f5;">
+                    </div>
+                    
+                    <div style="display: grid; grid-template-columns: 2fr 1fr; gap: 10px;">
+                        <div class="form-group">
+                            <label>Cidade</label>
+                            <input type="text" id="labelCity" placeholder="Cidade" readonly style="background: #f5f5f5;">
+                        </div>
+                        <div class="form-group">
+                            <label>Estado</label>
+                            <input type="text" id="labelState" placeholder="UF" readonly style="background: #f5f5f5;">
+                        </div>
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>CEP</label>
+                        <input type="text" id="labelZipCode" placeholder="00000-000" readonly style="background: #f5f5f5;">
+                    </div>
+                </div>
+                
                 <!-- Informações do Objeto -->
                 <div style="border-top: 1px solid var(--border); padding-top: 15px; margin-top: 15px;">
                     <h4 style="color: var(--primary); margin-bottom: 15px;">📦 Informações do Objeto</h4>
@@ -1090,7 +1126,8 @@
                     allClients = await response.json();
                     const filtered = allClients.filter(c => 
                         c.name.toLowerCase().includes(searchTerm) || 
-                        (c.email && c.email.toLowerCase().includes(searchTerm))
+                        (c.email && c.email.toLowerCase().includes(searchTerm)) ||
+                        (c.cnpj && c.cnpj.includes(searchTerm))
                     );
                     
                     if (filtered.length === 0) {
@@ -1099,9 +1136,13 @@
                     }
                     
                     resultsDiv.innerHTML = filtered.map(client => `
-                        <div class="client-item" onclick="selectClientFromSearch('${client.id}', '${client.name}')" style="cursor: pointer; margin-bottom: 5px;">
-                            <div class="client-name">${client.name}</div>
-                            <div class="client-info">${client.email || ''}</div>
+                        <div class="client-item" onclick="selectClientFromSearch(${JSON.stringify(client).replace(/'/g, '\\'')}')" style="cursor: pointer; margin-bottom: 8px; padding: 10px; background: var(--background); border-radius: 6px; border-left: 3px solid var(--primary);">
+                            <div class="client-name" style="font-weight: 600; color: var(--primary);">${client.name}</div>
+                            <div class="client-info" style="font-size: 12px; color: var(--text-muted); margin-top: 4px;">
+                                ${client.email ? '📧 ' + client.email : ''}
+                                ${client.phone ? ' | 📱 ' + client.phone : ''}
+                            </div>
+                            ${client.cnpj ? '<div class="client-info" style="font-size: 11px; color: var(--text-muted);">CNPJ: ' + client.cnpj + '</div>' : ''}
                         </div>
                     `).join('');
                 }
@@ -1110,10 +1151,23 @@
             }
         }
         
-        function selectClientFromSearch(clientId, clientName) {
-            document.getElementById('labelClient').value = clientId;
-            document.getElementById('labelClientSearch').value = clientName;
+        function selectClientFromSearch(client) {
+            if (!client || !client.id) return;
+            
+            // Preencher campos de cliente
+            document.getElementById('labelClient').value = client.id;
+            document.getElementById('labelClientSearch').value = client.name;
             document.getElementById('clientSearchResults').innerHTML = '';
+            
+            // Preencher dados de envio automaticamente
+            if (client.email) document.getElementById('labelEmail').value = client.email;
+            if (client.phone) document.getElementById('labelPhone').value = client.phone;
+            if (client.address) document.getElementById('labelAddress').value = client.address;
+            if (client.city) document.getElementById('labelCity').value = client.city;
+            if (client.state) document.getElementById('labelState').value = client.state;
+            if (client.zip_code) document.getElementById('labelZipCode').value = client.zip_code;
+            
+            showAlert('Cliente selecionado! Dados preenchidos automaticamente.', 'success');
         }
         
         function clearClientSearch() {
