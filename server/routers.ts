@@ -6,6 +6,7 @@ import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import * as correios from "./correios.js";
 import * as db from "./db.js";
 import * as authDb from "./auth-db.js";
+import { CorreiosIntegration } from "../lib/services/correios-integration.js";
 
 export const appRouter = router({
   system: systemRouter,
@@ -68,6 +69,118 @@ export const appRouter = router({
   }),
 
   correios: router({
+    // Novos endpoints com integração real
+    buscarCEP: publicProcedure
+      .input(z.object({ cep: z.string() }))
+      .query(async ({ input }) => {
+        try {
+          const service = new CorreiosIntegration();
+          const resultado = await service.searchCEP(input.cep);
+          return {
+            success: true,
+            data: resultado,
+          };
+        } catch (error) {
+          throw new Error(
+            `Erro ao buscar CEP: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      }),
+
+    calcularFrete: publicProcedure
+      .input(
+        z.object({
+          cepOrigem: z.string(),
+          cepDestino: z.string(),
+          peso: z.number(),
+          altura: z.number().optional(),
+          largura: z.number().optional(),
+          comprimento: z.number().optional(),
+          servicos: z.array(z.string()).optional(),
+        })
+      )
+      .query(async ({ input }) => {
+        try {
+          const service = new CorreiosIntegration();
+          const fretes = await service.calcularFrete(
+            input.cepOrigem,
+            input.cepDestino,
+            input.peso,
+            input.altura,
+            input.largura,
+            input.comprimento,
+            input.servicos
+          );
+          return {
+            success: true,
+            data: fretes,
+          };
+        } catch (error) {
+          throw new Error(
+            `Erro ao calcular frete: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      }),
+
+    gerarEtiquetaReal: publicProcedure
+      .input(
+        z.object({
+          destinatario: z.object({
+            nome: z.string(),
+            email: z.string(),
+            telefone: z.string(),
+            endereco: z.string(),
+            numero: z.string(),
+            complemento: z.string().optional(),
+            cidade: z.string(),
+            uf: z.string(),
+            cep: z.string(),
+          }),
+          peso: z.number(),
+          servico: z.string(),
+          descricao: z.string(),
+        })
+      )
+      .mutation(async ({ input }) => {
+        try {
+          const service = new CorreiosIntegration();
+          const etiqueta = await service.gerarEtiqueta(
+            input.destinatario,
+            input.peso,
+            input.servico,
+            input.descricao
+          );
+          return {
+            success: true,
+            data: etiqueta,
+          };
+        } catch (error) {
+          throw new Error(
+            `Erro ao gerar etiqueta: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      }),
+
+    rastrearEnvio: publicProcedure
+      .input(z.object({ codigoRastreamento: z.string() }))
+      .query(async ({ input }) => {
+        try {
+          const service = new CorreiosIntegration();
+          const rastreamento = await service.rastrearEnvio(
+            input.codigoRastreamento
+          );
+          return {
+            success: true,
+            data: rastreamento,
+          };
+        } catch (error) {
+          throw new Error(
+            `Erro ao rastrear envio: ${error instanceof Error ? error.message : String(error)}`
+          );
+        }
+      }),
+
+    // Endpoints legados (mantidos para compatibilidade)
     autenticar: publicProcedure
       .input(
         z.object({
@@ -92,23 +205,7 @@ export const appRouter = router({
         }
       }),
 
-    buscarCEP: publicProcedure
-      .input(
-        z.object({
-          token: z.string(),
-          cep: z.string(),
-        })
-      )
-      .query(async ({ input }) => {
-        try {
-          const result = await correios.buscarCEP(input.token, input.cep);
-          return result;
-        } catch (error) {
-          throw new Error(
-            `Erro ao buscar CEP: ${error instanceof Error ? error.message : String(error)}`
-          );
-        }
-      }),
+    // buscarCEP legado removido (usar novo endpoint acima)
 
     solicitarPostal: publicProcedure
       .input(
