@@ -19,6 +19,7 @@ import { AddStudentModal } from "./add-student-modal";
 import { useStudents } from "@/hooks/use-students";
 import { FreteSelector } from "@/components/frete-selector";
 import { LabelPrintButton } from "@/components/label-print-button";
+import { EmployeeAuthModal } from "@/components/employee-auth-modal";
 import type { FreteOption } from "@/hooks/use-correios-freight";
 import type { LabelData } from "@/lib/services/label-generator";
 
@@ -91,6 +92,8 @@ export default function CreateLabelScreen() {
   const [studentSearchQuery, setStudentSearchQuery] = useState("");
   const [showStudentList, setShowStudentList] = useState(false);
   const [selectedFrete, setSelectedFrete] = useState<FreteOption | null>(null);
+  const [showAuthModal, setShowAuthModal] = useState(false);
+  const [currentEmployee, setCurrentEmployee] = useState<any>(null);
   const studentSearchResults = studentSearchQuery.trim() ? searchStudents(studentSearchQuery) : { students: [], total: 0 };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -120,6 +123,11 @@ export default function CreateLabelScreen() {
   };
 
   const handleGenerateLabel = async () => {
+    if (!currentEmployee) {
+      setShowAuthModal(true);
+      return;
+    }
+
     setLoading(true);
     try {
       // TODO: Integrar com API de pré-postagem dos Correios
@@ -200,6 +208,26 @@ export default function CreateLabelScreen() {
             <MaterialIcons name="close" size={24} color={colors.foreground} />
           </TouchableOpacity>
         </View>
+
+        {/* Employee Section */}
+        {currentEmployee ? (
+          <View className="bg-green-100 rounded-lg p-3 flex-row items-center justify-between mb-6">
+            <Text className="text-green-800 font-semibold">👤 {currentEmployee.name}</Text>
+            <TouchableOpacity
+              onPress={() => setCurrentEmployee(null)}
+              className="px-3 py-1 bg-red-500 rounded"
+            >
+              <Text className="text-white text-sm">Sair</Text>
+            </TouchableOpacity>
+          </View>
+        ) : (
+          <TouchableOpacity
+            onPress={() => setShowAuthModal(true)}
+            className="bg-blue-100 rounded-lg p-3 items-center mb-6"
+          >
+            <Text className="text-blue-800 font-semibold">Autenticar Funcionário</Text>
+          </TouchableOpacity>
+        )}
 
         {/* Sender Section */}
         <SectionHeader title="📤 Remetente" section="sender" />
@@ -519,10 +547,10 @@ export default function CreateLabelScreen() {
 
             <TouchableOpacity
               onPress={handleGenerateLabel}
-              disabled={loading}
+              disabled={loading || !currentEmployee}
               className={cn(
                 "flex-1 py-3 rounded-lg flex-row items-center justify-center gap-2",
-                loading ? "bg-primary opacity-70" : "bg-primary"
+                loading || !currentEmployee ? "bg-gray-400 opacity-70" : "bg-primary"
               )}
               activeOpacity={0.8}
             >
@@ -532,7 +560,7 @@ export default function CreateLabelScreen() {
                 <MaterialIcons name="check" size={20} color="white" />
               )}
               <Text className="text-white font-semibold">
-                {loading ? "Gerando..." : "Gerar Etiqueta"}
+                {!currentEmployee ? "Autentique-se Primeiro" : loading ? "Gerando..." : "Gerar Etiqueta"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -547,6 +575,16 @@ export default function CreateLabelScreen() {
           handleSelectStudent(studentId);
           loadStudents();
         }}
+      />
+
+      {/* Employee Auth Modal */}
+      <EmployeeAuthModal
+        visible={showAuthModal}
+        onAuthenticate={(employee) => {
+          setCurrentEmployee(employee);
+          setShowAuthModal(false);
+        }}
+        onCancel={() => setShowAuthModal(false)}
       />
     </ScreenContainer>
   );

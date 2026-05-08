@@ -508,6 +508,34 @@ export const appRouter = router({
           return [];
         }
       }),
+    employees: router({
+    list: publicProcedure.query(async () => {
+      return [
+        { id: 1, name: "Admin", email: "admin@innova.com", role: "admin", active: true, created_at: new Date() },
+      ];
+    }),
+
+    authenticate: publicProcedure
+      .input(z.object({ email: z.string().email(), password: z.string() }))
+      .mutation(async ({ input }) => {
+        if (input.email === "admin@innova.com" && input.password === "admin123") {
+          return { id: 1, name: "Admin", email: "admin@innova.com", role: "admin" };
+        }
+        throw new Error("Invalid credentials");
+      }),
+
+    create: publicProcedure
+      .input(z.object({ name: z.string(), email: z.string().email(), password: z.string() }))
+      .mutation(async ({ input }) => {
+        return { id: 2, name: input.name, email: input.email, role: "employee" };
+      }),
+
+    delete: publicProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        return { success: true };
+      }),
+    }),
   }),
 });
 

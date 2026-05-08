@@ -160,3 +160,14 @@
 - [ ] Validar autenticação (login/logout)
 - [ ] Testar integração com Correios
 - [ ] Validar suporte a impressora USB
+
+## Gerenciamento de Funcionários
+
+- [x] Criar tela de cadastro de funcionários (admin only)
+- [x] Implementar autenticação de funcionário ao gerar etiqueta
+- [x] Adicionar seletor de funcionário na tela de criar etiqueta
+- [x] Criar modal de autenticação (email + senha)
+- [x] Salvar employee_id em cada etiqueta gerada
+- [ ] Criar tela de relatórios com filtro por funcionário
+- [ ] Implementar exportação de relatórios (PDF/Excel)
+- [ ] Adicionar histórico de etiquetas por funcionário
