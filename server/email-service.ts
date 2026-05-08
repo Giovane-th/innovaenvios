@@ -38,7 +38,7 @@ export async function sendEmail(template: EmailTemplate) {
               <p>${template.address}</p>
             </div>
             <p>Você pode rastrear seu envio usando o código acima.</p>
-            <p>Obrigado por usar InNova Envios - IEP!</p>
+            <p>Obrigado por usar InNova Envios!</p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             <p style="color: #999; font-size: 12px;">Este é um email automático, não responda.</p>
           </div>
@@ -57,7 +57,7 @@ export async function sendEmail(template: EmailTemplate) {
               <p><strong>Previsão de Entrega:</strong> ${template.estimatedDelivery}</p>
             </div>
             <p>Você pode acompanhar o status do seu envio em tempo real.</p>
-            <p>Obrigado por usar InNova Envios - IEP!</p>
+            <p>Obrigado por usar InNova Envios!</p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             <p style="color: #999; font-size: 12px;">Este é um email automático, não responda.</p>
           </div>
@@ -75,7 +75,7 @@ export async function sendEmail(template: EmailTemplate) {
               <p><strong>Código de Rastreamento:</strong> ${template.trackingNumber}</p>
               <p>Obrigado por sua compra!</p>
             </div>
-            <p>Obrigado por usar InNova Envios - IEP!</p>
+            <p>Obrigado por usar InNova Envios!</p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             <p style="color: #999; font-size: 12px;">Este é um email automático, não responda.</p>
           </div>
@@ -94,7 +94,7 @@ export async function sendEmail(template: EmailTemplate) {
               <p><strong>Código de Rastreamento:</strong> ${template.trackingNumber}</p>
             </div>
             <p>Estamos trabalhando para resolver este problema. Você será notificado em breve.</p>
-            <p>Obrigado por usar InNova Envios - IEP!</p>
+            <p>Obrigado por usar InNova Envios!</p>
             <hr style="border: none; border-top: 1px solid #ddd; margin: 20px 0;">
             <p style="color: #999; font-size: 12px;">Este é um email automático, não responda.</p>
           </div>

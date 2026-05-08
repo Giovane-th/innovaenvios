@@ -183,7 +183,7 @@ export default function HomeScreen() {
                 />
                 <View>
                   <Text className="text-2xl font-bold text-foreground">
-                    InNova Envios - IEP
+                    InNova Envios
                   </Text>
                   <Text className="text-sm text-muted mt-1">
                     Bem-vindo, {employee?.name || 'Funcionário'}!

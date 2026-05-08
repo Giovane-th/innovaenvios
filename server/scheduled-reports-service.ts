@@ -273,7 +273,7 @@ export async function generateReportHTML(
           </table>
 
           <div class="footer">
-            <p>Este é um relatório automático gerado pelo sistema InNova Envios - IEP.</p>
+            <p>Este é um relatório automático gerado pelo sistema InNova Envios.</p>
             <p>Não responda este email. Para dúvidas, entre em contato com o administrador.</p>
           </div>
         </div>

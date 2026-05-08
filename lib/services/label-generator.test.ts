@@ -7,7 +7,7 @@ import {
 } from "./label-generator";
 
 const mockLabelData: LabelData = {
-  senderName: "InNova Envios - IEP",
+  senderName: "InNova Envios",
   senderAddress: "Rua Principal",
   senderNumber: "123",
   senderCity: "São Paulo",
