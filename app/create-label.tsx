@@ -17,6 +17,8 @@ import { MaterialIcons } from "@expo/vector-icons";
 import { cn } from "@/lib/utils";
 import { AddStudentModal } from "./add-student-modal";
 import { useStudents } from "@/hooks/use-students";
+import { FreteSelector } from "@/components/frete-selector";
+import type { FreteOption } from "@/hooks/use-correios-freight";
 
 interface FormData {
   // Remetente
@@ -86,6 +88,7 @@ export default function CreateLabelScreen() {
   const [expandedSection, setExpandedSection] = useState<"sender" | "recipient" | "object">("recipient");
   const [studentSearchQuery, setStudentSearchQuery] = useState("");
   const [showStudentList, setShowStudentList] = useState(false);
+  const [selectedFrete, setSelectedFrete] = useState<FreteOption | null>(null);
   const studentSearchResults = studentSearchQuery.trim() ? searchStudents(studentSearchQuery) : { students: [], total: 0 };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -444,6 +447,30 @@ export default function CreateLabelScreen() {
               field="description"
               placeholder="Ex: Eletrônicos, Roupas, etc."
             />
+
+            {/* Frete Selector */}
+            <View className="mt-6 pt-4 border-t border-border">
+              <Text className="text-sm font-semibold text-foreground mb-3">
+                💰 Opções de Frete
+              </Text>
+              <FreteSelector
+                cepOrigem={form.senderCEP}
+                cepDestino={form.recipientCEP}
+                peso={parseFloat(form.weight) || 0}
+                onSelectFrete={setSelectedFrete}
+                selectedFrete={selectedFrete}
+              />
+              {selectedFrete && (
+                <View className="mt-4 p-3 bg-primary rounded-lg">
+                  <Text className="text-white font-semibold">
+                    {selectedFrete.nome} - R$ {selectedFrete.valor.toFixed(2)}
+                  </Text>
+                  <Text className="text-white text-xs mt-1">
+                    Prazo: {selectedFrete.prazo} dia{selectedFrete.prazo > 1 ? "s" : ""}
+                  </Text>
+                </View>
+              )}
+            </View>
           </View>
         )}
 
