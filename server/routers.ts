@@ -6,6 +6,7 @@ import { publicProcedure, router, protectedProcedure } from "./_core/trpc";
 import * as correios from "./correios.js";
 import * as db from "./db.js";
 import * as authDb from "./auth-db.js";
+import * as reportsDb from "./reports-db.js";
 import { CorreiosIntegration } from "../lib/services/correios-integration.js";
 
 export const appRouter = router({
@@ -536,6 +537,25 @@ export const appRouter = router({
         return { success: true };
       }),
     }),
+  }),
+
+  reports: router({
+    getShippingReport: protectedProcedure
+      .input(z.object({
+        startDate: z.string().datetime(),
+        endDate: z.string().datetime(),
+      }))
+      .query(async ({ input }) => {
+        return await reportsDb.getShippingReport(
+          new Date(input.startDate),
+          new Date(input.endDate)
+        );
+      }),
+
+    getSummary: protectedProcedure
+      .query(async () => {
+        return await reportsDb.getReportSummary();
+      }),
   }),
 });
 

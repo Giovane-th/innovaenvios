@@ -180,3 +180,14 @@
 - [x] Cidades não estavam sendo preenchidas (campo Cidade com C maiúsculo)
 - [x] Testes de busca criados e validados (9/9 passando)
 - [x] searchClients endpoint corrigido para usar OR em vez de AND
+
+
+## Dashboard de Relatórios (Concluído)
+
+- [x] Criar endpoints tRPC para relatórios
+- [x] Implementar filtros por período (data início/fim)
+- [x] Criar gráficos de envios por período
+- [x] Implementar exportação para PDF
+- [x] Adicionar controle de acesso (admin only)
+- [x] Criar testes para relatórios (9/9 passando)
+- [x] Validar no Expo Go e web

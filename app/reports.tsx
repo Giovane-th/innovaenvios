@@ -4,350 +4,396 @@ import {
   Text,
   TouchableOpacity,
   ScrollView,
-  TextInput,
-  Alert,
   ActivityIndicator,
-  FlatList,
+  Alert,
+  TextInput,
+  Modal,
+  Platform,
 } from 'react-native';
 import { ScreenContainer } from '@/components/screen-container';
-import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useAuth } from '@/hooks/use-auth';
 import { trpc } from '@/lib/trpc';
+import { useColors } from '@/hooks/use-colors';
 
-interface ShippingLabelWithCost {
-  id: number;
-  code: string;
-  recipient: string;
-  cost: string | null;
-  weight: string | null;
-  service_type: string | null;
-  status: string;
-  created_by: number;
-  createdAt: Date;
+interface ReportData {
+  totalShipments: number;
+  totalValue: number;
+  averageValue: number;
+  byStatus: Record<string, number>;
+  byDestination: Record<string, number>;
+  dailyData: Array<{
+    date: string;
+    count: number;
+    value: number;
+  }>;
 }
 
 export default function ReportsScreen() {
-  const router = useRouter();
-  const { user } = useAuth();
-  const [labels, setLabels] = useState<ShippingLabelWithCost[]>([]);
-  const [loading, setLoading] = useState(true);
-  const [filterPeriod, setFilterPeriod] = useState('month'); // 'week', 'month', 'year'
-  const [totalCost, setTotalCost] = useState(0);
-  const [averageCost, setAverageCost] = useState(0);
+  const colors = useColors();
+  const [loading, setLoading] = useState(false);
+  const [reportData, setReportData] = useState<ReportData | null>(null);
+  const [startDate, setStartDate] = useState<Date>(
+    new Date(new Date().setDate(new Date().getDate() - 30))
+  );
+  const [endDate, setEndDate] = useState<Date>(new Date());
+  const [showDatePicker, setShowDatePicker] = useState<'start' | 'end' | null>(null);
+  const [tempDate, setTempDate] = useState('');
 
-  // Verificar se é admin
   useEffect(() => {
-    if (user && (user as any).role !== 'admin') {
-      Alert.alert('Acesso Negado', 'Apenas administradores podem acessar relatórios de gastos');
-      router.back();
-    }
-  }, [user]);
+    loadReport();
+  }, []);
 
-  // Carregar etiquetas
-  useEffect(() => {
-    loadLabels();
-  }, [filterPeriod]);
-
-  const loadLabels = async () => {
+  const loadReport = async () => {
     try {
       setLoading(true);
-      const result = await (trpc.shippingLabels.list as any).query();
-      
-      // Filtrar por período
-      const now = new Date();
-      let startDate = new Date();
-      
-      if (filterPeriod === 'week') {
-        startDate.setDate(now.getDate() - 7);
-      } else if (filterPeriod === 'month') {
-        startDate.setMonth(now.getMonth() - 1);
-      } else if (filterPeriod === 'year') {
-        startDate.setFullYear(now.getFullYear() - 1);
-      }
-
-      const filtered = result.filter((label: any) => {
-        const labelDate = new Date(label.createdAt);
-        return labelDate >= startDate && labelDate <= now;
+      const result = await (trpc.reports.getShippingReport as any).query({
+        startDate: startDate.toISOString(),
+        endDate: endDate.toISOString(),
       });
-
-      setLabels(filtered);
-
-      // Calcular totais
-      const total = filtered.reduce((sum: number, label: any) => {
-        const cost = parseFloat(label.cost || '0');
-        return sum + cost;
-      }, 0);
-
-      setTotalCost(total);
-      setAverageCost(filtered.length > 0 ? total / filtered.length : 0);
+      setReportData(result);
     } catch (error) {
-      console.error('Erro ao carregar etiquetas:', error);
-      Alert.alert('Erro', 'Falha ao carregar relatório de gastos');
+      console.error('Error loading report:', error);
+      Alert.alert('Erro', 'Erro ao carregar relatório');
     } finally {
       setLoading(false);
     }
   };
 
-  const handleExportReport = () => {
-    Alert.alert(
-      'Exportar Relatório',
-      'Escolha o formato:',
-      [
-        {
-          text: 'CSV',
-          onPress: () => {
-            const csv = generateCSV();
-            downloadFile(csv, 'relatorio-gastos.csv', 'text/csv');
-          },
-        },
-        {
-          text: 'PDF',
-          onPress: () => {
-            const html = generateHTML();
-            downloadFile(html, 'relatorio-gastos.html', 'text/html');
-          },
-        },
-        { text: 'Cancelar', onPress: () => {} },
-      ]
-    );
-  };
-
-  const generateCSV = () => {
-    const headers = ['Código', 'Destinatário', 'Custo', 'Peso', 'Serviço', 'Status', 'Data'];
-    const rows = labels.map((label) => [
-      label.code,
-      label.recipient,
-      label.cost || '0',
-      label.weight || '-',
-      label.service_type || '-',
-      label.status,
-      new Date(label.createdAt).toLocaleDateString('pt-BR'),
-    ]);
-
-    const csv = [
-      ['Relatório de Gastos de Envio'],
-      [`Período: ${filterPeriod}`],
-      [`Total de Envios: ${labels.length}`],
-      [`Custo Total: R$ ${totalCost.toFixed(2)}`],
-      [`Custo Médio: R$ ${averageCost.toFixed(2)}`],
-      [],
-      headers,
-      ...rows,
-    ]
-      .map((row) => row.map((cell) => `"${String(cell).replace(/"/g, '""')}"`).join(','))
-      .join('\n');
-
-    return csv;
-  };
-
-  const generateHTML = () => {
-    return `
-      <!DOCTYPE html>
-      <html lang="pt-BR">
-      <head>
-        <meta charset="UTF-8">
-        <title>Relatório de Gastos</title>
-        <style>
-          body { font-family: Arial, sans-serif; margin: 20px; }
-          h1 { color: #0a7ea4; }
-          .summary { background: #f0f0f0; padding: 15px; border-radius: 5px; margin-bottom: 20px; }
-          table { width: 100%; border-collapse: collapse; margin-top: 20px; }
-          th { background: #0a7ea4; color: white; padding: 10px; text-align: left; }
-          td { padding: 8px; border-bottom: 1px solid #ddd; }
-          tr:nth-child(even) { background: #f9f9f9; }
-        </style>
-      </head>
-      <body>
-        <h1>Relatório de Gastos de Envio</h1>
-        <div class="summary">
-          <p><strong>Período:</strong> ${filterPeriod}</p>
-          <p><strong>Total de Envios:</strong> ${labels.length}</p>
-          <p><strong>Custo Total:</strong> R$ ${totalCost.toFixed(2)}</p>
-          <p><strong>Custo Médio:</strong> R$ ${averageCost.toFixed(2)}</p>
-          <p><strong>Data do Relatório:</strong> ${new Date().toLocaleString('pt-BR')}</p>
-        </div>
-        <table>
-          <thead>
-            <tr>
-              <th>Código</th>
-              <th>Destinatário</th>
-              <th>Custo</th>
-              <th>Peso</th>
-              <th>Serviço</th>
-              <th>Status</th>
-              <th>Data</th>
-            </tr>
-          </thead>
-          <tbody>
-            ${labels
-              .map(
-                (label) => `
-              <tr>
-                <td>${label.code}</td>
-                <td>${label.recipient}</td>
-                <td>R$ ${parseFloat(label.cost || '0').toFixed(2)}</td>
-                <td>${label.weight || '-'}</td>
-                <td>${label.service_type || '-'}</td>
-                <td>${label.status}</td>
-                <td>${new Date(label.createdAt).toLocaleDateString('pt-BR')}</td>
-              </tr>
-            `
-              )
-              .join('')}
-          </tbody>
-        </table>
-      </body>
-      </html>
-    `;
-  };
-
-  const downloadFile = (content: string, filename: string, type: string) => {
-    if (typeof window !== 'undefined') {
-      const blob = new Blob([content], { type });
-      const url = URL.createObjectURL(blob);
-      const link = document.createElement('a');
-      link.href = url;
-      link.download = filename;
-      document.body.appendChild(link);
-      link.click();
-      document.body.removeChild(link);
-      Alert.alert('Sucesso', 'Relatório exportado com sucesso!');
+  const handleDateChange = (type: 'start' | 'end', dateStr: string) => {
+    try {
+      const date = new Date(dateStr);
+      if (type === 'start') {
+        setStartDate(date);
+      } else {
+        setEndDate(date);
+      }
+      setShowDatePicker(null);
+      setTempDate('');
+    } catch (error) {
+      Alert.alert('Erro', 'Data inválida');
     }
   };
 
-  if (loading) {
-    return (
-      <ScreenContainer className="items-center justify-center">
-        <ActivityIndicator size="large" color="#0a7ea4" />
-      </ScreenContainer>
-    );
-  }
+  const exportToPDF = async () => {
+    if (!reportData) return;
 
-  if (!user || (user as any).role !== 'admin') {
-    return (
-      <ScreenContainer className="items-center justify-center">
-        <Text className="text-lg text-red-600">Acesso Negado</Text>
-      </ScreenContainer>
-    );
-  }
+    try {
+      let pdfContent = `
+        <html>
+          <head>
+            <title>Relatório de Envios</title>
+            <style>
+              body { font-family: Arial, sans-serif; margin: 20px; }
+              h1 { color: #0a7ea4; text-align: center; }
+              .header { margin-bottom: 20px; }
+              .section { margin: 20px 0; page-break-inside: avoid; }
+              .stats { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; margin: 20px 0; }
+              .stat-box { border: 1px solid #ddd; padding: 15px; border-radius: 5px; }
+              .stat-label { color: #666; font-size: 12px; }
+              .stat-value { font-size: 24px; font-weight: bold; color: #0a7ea4; }
+              table { width: 100%; border-collapse: collapse; margin: 10px 0; }
+              th { background-color: #0a7ea4; color: white; padding: 10px; text-align: left; }
+              td { padding: 8px; border-bottom: 1px solid #ddd; }
+              tr:nth-child(even) { background-color: #f9f9f9; }
+              .footer { margin-top: 30px; font-size: 12px; color: #666; text-align: center; }
+            </style>
+          </head>
+          <body>
+            <h1>Relatório de Envios</h1>
+            <div class="header">
+              <p><strong>Período:</strong> ${startDate.toLocaleDateString('pt-BR')} a ${endDate.toLocaleDateString('pt-BR')}</p>
+              <p><strong>Gerado em:</strong> ${new Date().toLocaleString('pt-BR')}</p>
+            </div>
+
+            <div class="section">
+              <h2>Resumo Geral</h2>
+              <div class="stats">
+                <div class="stat-box">
+                  <div class="stat-label">Total de Envios</div>
+                  <div class="stat-value">${reportData.totalShipments}</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Valor Total</div>
+                  <div class="stat-value">R$ ${reportData.totalValue.toFixed(2)}</div>
+                </div>
+                <div class="stat-box">
+                  <div class="stat-label">Valor Médio</div>
+                  <div class="stat-value">R$ ${reportData.averageValue.toFixed(2)}</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="section">
+              <h2>Envios por Status</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Status</th>
+                    <th>Quantidade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${Object.entries(reportData.byStatus)
+                    .map(
+                      ([status, count]) => `
+                    <tr>
+                      <td>${status}</td>
+                      <td>${count}</td>
+                    </tr>
+                  `
+                    )
+                    .join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="section">
+              <h2>Envios por Destino (UF)</h2>
+              <table>
+                <thead>
+                  <tr>
+                    <th>Estado</th>
+                    <th>Quantidade</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  ${Object.entries(reportData.byDestination)
+                    .map(
+                      ([uf, count]) => `
+                    <tr>
+                      <td>${uf}</td>
+                      <td>${count}</td>
+                    </tr>
+                  `
+                    )
+                    .join('')}
+                </tbody>
+              </table>
+            </div>
+
+            <div class="footer">
+              <p>Relatório gerado automaticamente pelo sistema In'Nova Envios</p>
+            </div>
+          </body>
+        </html>
+      `;
+
+      if (Platform.OS === 'web') {
+        const blob = new Blob([pdfContent], { type: 'text/html;charset=utf-8;' });
+        const link = document.createElement('a');
+        const url = URL.createObjectURL(blob);
+        link.setAttribute('href', url);
+        link.setAttribute(
+          'download',
+          `relatorio_envios_${new Date().toISOString().split('T')[0]}.html`
+        );
+        link.style.visibility = 'hidden';
+        document.body.appendChild(link);
+        link.click();
+        document.body.removeChild(link);
+        Alert.alert('Sucesso', 'Relatório exportado com sucesso!');
+      } else {
+        Alert.alert('Info', 'Exportação de PDF disponível apenas na versão web');
+      }
+    } catch (error) {
+      console.error('Error exporting PDF:', error);
+      Alert.alert('Erro', 'Erro ao exportar relatório');
+    }
+  };
+
+  const formatCurrency = (value: number) => {
+    return new Intl.NumberFormat('pt-BR', {
+      style: 'currency',
+      currency: 'BRL',
+    }).format(value);
+  };
 
   return (
-    <ScreenContainer className="p-4">
+    <ScreenContainer className="bg-gray-50">
       <ScrollView contentContainerStyle={{ flexGrow: 1 }}>
-        <View className="gap-4">
-          {/* Header */}
-          <View className="flex-row items-center justify-between">
-            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
-              <MaterialIcons name="arrow-back" size={24} color="#11181C" />
-            </TouchableOpacity>
-            <Text className="text-2xl font-bold text-foreground">Relatório de Gastos</Text>
-            <TouchableOpacity
-              onPress={() => router.back()}
-              className="bg-gray-200 rounded-lg p-2"
-            >
-              <MaterialIcons name="close" size={24} color="#333" />
-            </TouchableOpacity>
-          </View>
+        <View className="bg-white p-4 border-b border-gray-200">
+          <Text className="text-2xl font-bold text-foreground">Relatórios</Text>
+          <Text className="text-sm text-gray-600 mt-1">Análise de envios e faturamento</Text>
+        </View>
 
-          {/* Filtro de Período */}
-          <View className="gap-2">
-            <Text className="text-sm font-semibold text-gray-600">Período</Text>
-            <View className="flex-row gap-2">
-              {['week', 'month', 'year'].map((period) => (
-                <TouchableOpacity
-                  key={period}
-                  onPress={() => setFilterPeriod(period)}
-                  className={`flex-1 rounded-lg p-3 ${
-                    filterPeriod === period ? 'bg-blue-600' : 'bg-gray-200'
-                  }`}
-                >
-                  <Text
-                    className={`text-center font-semibold ${
-                      filterPeriod === period ? 'text-white' : 'text-gray-700'
-                    }`}
-                  >
-                    {period === 'week' ? '7 dias' : period === 'month' ? '30 dias' : '1 ano'}
-                  </Text>
-                </TouchableOpacity>
-              ))}
-            </View>
-          </View>
+        <View className="bg-white p-4 m-3 rounded-lg border border-gray-200">
+          <Text className="text-lg font-semibold text-foreground mb-3">Filtros</Text>
 
-          {/* Resumo */}
           <View className="gap-3">
-            <View className="bg-blue-50 rounded-lg p-4 border border-blue-200">
-              <Text className="text-sm text-gray-600">Total de Envios</Text>
-              <Text className="text-3xl font-bold text-blue-600">{labels.length}</Text>
+            <View>
+              <Text className="text-sm font-medium text-gray-700 mb-1">Data Inicial</Text>
+              <TouchableOpacity
+                onPress={() => setShowDatePicker('start')}
+                className="bg-gray-100 rounded-lg p-3 flex-row items-center justify-between"
+              >
+                <Text className="text-foreground">{startDate.toLocaleDateString('pt-BR')}</Text>
+                <MaterialIcons name="calendar-today" size={20} color={colors.primary} />
+              </TouchableOpacity>
             </View>
 
-            <View className="bg-green-50 rounded-lg p-4 border border-green-200">
-              <Text className="text-sm text-gray-600">Custo Total</Text>
-              <Text className="text-3xl font-bold text-green-600">R$ {totalCost.toFixed(2)}</Text>
+            <View>
+              <Text className="text-sm font-medium text-gray-700 mb-1">Data Final</Text>
+              <TouchableOpacity
+                onPress={() => setShowDatePicker('end')}
+                className="bg-gray-100 rounded-lg p-3 flex-row items-center justify-between"
+              >
+                <Text className="text-foreground">{endDate.toLocaleDateString('pt-BR')}</Text>
+                <MaterialIcons name="calendar-today" size={20} color={colors.primary} />
+              </TouchableOpacity>
             </View>
 
-            <View className="bg-purple-50 rounded-lg p-4 border border-purple-200">
-              <Text className="text-sm text-gray-600">Custo Médio por Envio</Text>
-              <Text className="text-3xl font-bold text-purple-600">R$ {averageCost.toFixed(2)}</Text>
+            <View className="flex-row gap-2 mt-2">
+              <TouchableOpacity
+                onPress={loadReport}
+                disabled={loading}
+                className="flex-1 bg-primary rounded-lg p-3 items-center"
+              >
+                {loading ? (
+                  <ActivityIndicator color="white" />
+                ) : (
+                  <>
+                    <MaterialIcons name="refresh" size={20} color="white" />
+                    <Text className="text-white font-semibold text-sm mt-1">Atualizar</Text>
+                  </>
+                )}
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={exportToPDF}
+                disabled={!reportData || loading}
+                className="flex-1 bg-green-600 rounded-lg p-3 items-center"
+              >
+                <MaterialIcons name="file-download" size={20} color="white" />
+                <Text className="text-white font-semibold text-sm mt-1">Exportar</Text>
+              </TouchableOpacity>
             </View>
-          </View>
-
-          {/* Botão Exportar */}
-          <TouchableOpacity
-            onPress={handleExportReport}
-            className="bg-blue-600 rounded-lg p-4"
-          >
-            <View className="flex-row items-center justify-center gap-2">
-              <MaterialIcons name="download" size={20} color="white" />
-              <Text className="text-white font-semibold">Exportar Relatório</Text>
-            </View>
-          </TouchableOpacity>
-
-          {/* Lista de Etiquetas */}
-          <View>
-            <Text className="text-lg font-bold text-foreground mb-3">Detalhes dos Envios</Text>
-            <FlatList
-              data={labels}
-              keyExtractor={(item) => item.id.toString()}
-              scrollEnabled={false}
-              renderItem={({ item }) => (
-                <View className="bg-surface rounded-lg p-3 mb-2 border border-border">
-                  <View className="flex-row justify-between items-start mb-2">
-                    <View className="flex-1">
-                      <Text className="font-semibold text-foreground">{item.code}</Text>
-                      <Text className="text-sm text-muted">{item.recipient}</Text>
-                    </View>
-                    <View className="bg-blue-100 rounded px-2 py-1">
-                      <Text className="text-xs font-semibold text-blue-700">{item.status}</Text>
-                    </View>
-                  </View>
-
-                  <View className="flex-row justify-between mb-2">
-                    <View>
-                      <Text className="text-xs text-muted">Custo</Text>
-                      <Text className="font-semibold text-green-600">
-                        R$ {parseFloat(item.cost || '0').toFixed(2)}
-                      </Text>
-                    </View>
-                    <View>
-                      <Text className="text-xs text-muted">Peso</Text>
-                      <Text className="font-semibold text-foreground">{item.weight || '-'}</Text>
-                    </View>
-                    <View>
-                      <Text className="text-xs text-muted">Serviço</Text>
-                      <Text className="font-semibold text-foreground">{item.service_type || '-'}</Text>
-                    </View>
-                  </View>
-
-                  <Text className="text-xs text-muted">
-                    {new Date(item.createdAt).toLocaleString('pt-BR')}
-                  </Text>
-                </View>
-              )}
-            />
           </View>
         </View>
+
+        {loading ? (
+          <View className="flex-1 items-center justify-center p-4">
+            <ActivityIndicator size="large" color={colors.primary} />
+            <Text className="text-gray-600 mt-2">Carregando relatório...</Text>
+          </View>
+        ) : reportData ? (
+          <>
+            <View className="p-3 gap-3">
+              <View className="bg-white rounded-lg p-4 border border-gray-200">
+                <View className="flex-row justify-between items-start mb-2">
+                  <View>
+                    <Text className="text-sm text-gray-600">Total de Envios</Text>
+                    <Text className="text-3xl font-bold text-primary mt-1">
+                      {reportData.totalShipments}
+                    </Text>
+                  </View>
+                  <MaterialIcons name="local-shipping" size={32} color={colors.primary} />
+                </View>
+              </View>
+
+              <View className="bg-white rounded-lg p-4 border border-gray-200">
+                <View className="flex-row justify-between items-start mb-2">
+                  <View>
+                    <Text className="text-sm text-gray-600">Valor Total</Text>
+                    <Text className="text-3xl font-bold text-green-600 mt-1">
+                      {formatCurrency(reportData.totalValue)}
+                    </Text>
+                  </View>
+                  <MaterialIcons name="attach-money" size={32} color="#16a34a" />
+                </View>
+              </View>
+
+              <View className="bg-white rounded-lg p-4 border border-gray-200">
+                <View className="flex-row justify-between items-start mb-2">
+                  <View>
+                    <Text className="text-sm text-gray-600">Valor Médio</Text>
+                    <Text className="text-3xl font-bold text-blue-600 mt-1">
+                      {formatCurrency(reportData.averageValue)}
+                    </Text>
+                  </View>
+                  <MaterialIcons name="trending-up" size={32} color="#2563eb" />
+                </View>
+              </View>
+            </View>
+
+            {Object.keys(reportData.byStatus).length > 0 && (
+              <View className="bg-white p-4 m-3 rounded-lg border border-gray-200">
+                <Text className="text-lg font-semibold text-foreground mb-3">Por Status</Text>
+                {Object.entries(reportData.byStatus).map(([status, count]) => (
+                  <View key={status} className="flex-row justify-between items-center py-2 border-b border-gray-100">
+                    <Text className="text-foreground capitalize">{status}</Text>
+                    <View className="bg-blue-100 rounded-full px-3 py-1">
+                      <Text className="text-blue-700 font-semibold">{count}</Text>
+                    </View>
+                  </View>
+                ))}
+              </View>
+            )}
+
+            {Object.keys(reportData.byDestination).length > 0 && (
+              <View className="bg-white p-4 m-3 rounded-lg border border-gray-200 mb-4">
+                <Text className="text-lg font-semibold text-foreground mb-3">Por Destino (UF)</Text>
+                {Object.entries(reportData.byDestination)
+                  .sort(([, a], [, b]) => b - a)
+                  .slice(0, 10)
+                  .map(([uf, count]) => (
+                    <View key={uf} className="flex-row justify-between items-center py-2 border-b border-gray-100">
+                      <Text className="text-foreground font-medium">{uf}</Text>
+                      <View className="bg-green-100 rounded-full px-3 py-1">
+                        <Text className="text-green-700 font-semibold">{count}</Text>
+                      </View>
+                    </View>
+                  ))}
+              </View>
+            )}
+          </>
+        ) : (
+          <View className="flex-1 items-center justify-center p-4">
+            <MaterialIcons name="info" size={48} color={colors.muted} />
+            <Text className="text-gray-600 mt-2">Nenhum dado disponível</Text>
+          </View>
+        )}
       </ScrollView>
+
+      <Modal visible={showDatePicker !== null} transparent animationType="fade">
+        <View className="flex-1 bg-black/50 items-center justify-center p-4">
+          <View className="bg-white rounded-lg p-6 w-full max-w-sm">
+            <Text className="text-xl font-bold text-foreground mb-4">
+              {showDatePicker === 'start' ? 'Data Inicial' : 'Data Final'}
+            </Text>
+
+            <TextInput
+              placeholder="YYYY-MM-DD"
+              value={tempDate}
+              onChangeText={setTempDate}
+              className="border border-gray-300 rounded-lg p-3 mb-4"
+              style={{ color: '#000' }}
+            />
+
+            <View className="flex-row gap-2">
+              <TouchableOpacity
+                onPress={() => {
+                  setShowDatePicker(null);
+                  setTempDate('');
+                }}
+                className="flex-1 bg-gray-200 rounded-lg p-3 items-center"
+              >
+                <Text className="text-foreground font-semibold">Cancelar</Text>
+              </TouchableOpacity>
+
+              <TouchableOpacity
+                onPress={() => {
+                  if (tempDate) {
+                    handleDateChange(showDatePicker!, tempDate);
+                  }
+                }}
+                className="flex-1 bg-primary rounded-lg p-3 items-center"
+              >
+                <Text className="text-white font-semibold">Confirmar</Text>
+              </TouchableOpacity>
+            </View>
+          </View>
+        </View>
+      </Modal>
     </ScreenContainer>
   );
 }
