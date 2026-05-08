@@ -238,6 +238,9 @@ export default function ReportsScreen() {
         <View className="gap-4">
           {/* Header */}
           <View className="flex-row items-center justify-between">
+            <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+              <MaterialIcons name="arrow-back" size={24} color="#11181C" />
+            </TouchableOpacity>
             <Text className="text-2xl font-bold text-foreground">Relatório de Gastos</Text>
             <TouchableOpacity
               onPress={() => router.back()}

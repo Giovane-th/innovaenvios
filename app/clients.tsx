@@ -348,6 +348,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -370,6 +371,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -391,6 +393,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -413,6 +416,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -435,6 +439,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -456,6 +461,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -478,6 +484,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -499,6 +506,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -521,6 +529,7 @@ export default function ClientsScreen() {
                     paddingHorizontal: 12,
                     paddingVertical: 10,
                     fontSize: 16,
+                    color: '#000',
                   }}
                 />
                 <TouchableOpacity
@@ -580,6 +589,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -602,6 +612,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -623,6 +634,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 16,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 
@@ -644,6 +656,7 @@ export default function ClientsScreen() {
                   paddingVertical: 10,
                   marginBottom: 24,
                   fontSize: 16,
+                  color: '#000',
                 }}
               />
 

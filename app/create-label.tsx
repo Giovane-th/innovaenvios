@@ -187,6 +187,9 @@ export default function CreateLabelScreen() {
       <ScrollView showsVerticalScrollIndicator={false}>
         {/* Header */}
         <View className="flex-row items-center justify-between mb-6 mt-4">
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+            <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
+          </TouchableOpacity>
           <Text className="text-2xl font-bold text-foreground">Nova Etiqueta</Text>
           <TouchableOpacity activeOpacity={0.7}>
             <MaterialIcons name="close" size={24} color={colors.foreground} />

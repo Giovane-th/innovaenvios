@@ -142,6 +142,14 @@ export default function SettingsScreen() {
   return (
     <ScreenContainer className="bg-gray-50">
       <ScrollView showsVerticalScrollIndicator={false} className="flex-1">
+        {/* Header */}
+        <View className="flex-row items-center gap-3 px-4 pt-4 pb-4">
+          <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+            <MaterialIcons name="arrow-back" size={24} color="#11181C" />
+          </TouchableOpacity>
+          <Text className="text-2xl font-bold text-foreground">Configurações</Text>
+        </View>
+
         {/* Perfil */}
         <View className="bg-white rounded-lg p-6 m-4 shadow-sm">
           <View className="flex-row items-center mb-4">

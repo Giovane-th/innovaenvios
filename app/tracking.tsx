@@ -12,6 +12,7 @@ import {
 import { MaterialIcons } from '@expo/vector-icons';
 import { ScreenContainer } from '@/components/screen-container';
 import { useColors } from '@/hooks/use-colors';
+import { useRouter } from 'expo-router';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 interface TrackingEvent {
@@ -34,6 +35,7 @@ interface TrackingInfo {
 }
 
 export default function TrackingScreen() {
+  const router = useRouter();
   const colors = useColors();
   const [codigoRastreamento, setCodigoRastreamento] = useState('');
   const [loading, setLoading] = useState(false);
@@ -167,13 +169,18 @@ export default function TrackingScreen() {
         ListHeaderComponent={
           <View className="pb-6">
             {/* Header */}
-            <View className="mb-6">
-              <Text className="text-2xl font-bold text-foreground">
-                Rastreamento
-              </Text>
-              <Text className="text-sm text-muted mt-1">
-                Acompanhe seus envios
-              </Text>
+            <View className="flex-row items-center gap-3 mb-6">
+              <TouchableOpacity onPress={() => router.back()} activeOpacity={0.7}>
+                <MaterialIcons name="arrow-back" size={24} color={colors.foreground} />
+              </TouchableOpacity>
+              <View className="flex-1">
+                <Text className="text-2xl font-bold text-foreground">
+                  Rastreamento
+                </Text>
+                <Text className="text-sm text-muted mt-1">
+                  Acompanhe seus envios
+                </Text>
+              </View>
             </View>
 
             {/* Busca */}
