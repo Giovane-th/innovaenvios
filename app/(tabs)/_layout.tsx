@@ -65,6 +65,12 @@ export default function TabLayout() {
               onPress={() => router.push("/tracking")}
               colors={colors}
             />
+            <SidebarItem
+              icon="person-add"
+              label="Funcionários"
+              onPress={() => router.push("/employees")}
+              colors={colors}
+            />
           </View>
         </View>
 
@@ -104,6 +110,13 @@ export default function TabLayout() {
               options={{
                 title: "Rastreamento",
                 tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+              }}
+            />
+            <Tabs.Screen
+              name="employees"
+              options={{
+                title: "Funcionários",
+                tabBarIcon: ({ color }) => <MaterialIcons name="person-add" size={28} color={color} />,
               }}
             />
           </Tabs>
@@ -150,14 +163,21 @@ export default function TabLayout() {
           tabBarIcon: ({ color }) => <IconSymbol size={28} name="chart.bar.fill" color={color} />,
         }}
       />
-      <Tabs.Screen
-        name="../tracking"
-        options={{
-          title: "Rastreamento",
-          tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
-        }}
-      />
-    </Tabs>
+            <Tabs.Screen
+              name="../tracking"
+              options={{
+                title: "Rastreamento",
+                tabBarIcon: ({ color }) => <IconSymbol size={28} name="paperplane.fill" color={color} />,
+              }}
+            />
+            <Tabs.Screen
+              name="../employees"
+              options={{
+                title: "Funcionários",
+                tabBarIcon: ({ color }) => <MaterialIcons name="person-add" size={28} color={color} />,
+              }}
+            />
+          </Tabs>
   );
 }
 

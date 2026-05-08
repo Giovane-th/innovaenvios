@@ -13,7 +13,7 @@ import {
 import { ScreenContainer } from '@/components/screen-container';
 import { useRouter } from 'expo-router';
 import { MaterialIcons } from '@expo/vector-icons';
-import { useClients } from '@/hooks/use-clients';
+import { useClientsAPI } from '@/hooks/use-clients-api';
 import { useCEPLookup } from '@/hooks/use-cep-lookup';
 import { useClientReport } from '@/hooks/use-client-report';
 
@@ -24,13 +24,11 @@ export default function ClientsScreen() {
     loading,
     searchQuery,
     setSearchQuery,
-    importClients,
     addClient,
     updateClient,
     deleteClient,
-    searchClients,
     getStatistics,
-  } = useClients();
+  } = useClientsAPI();
 
   const [showAddModal, setShowAddModal] = useState(false);
   const [showImportModal, setShowImportModal] = useState(false);
@@ -56,7 +54,6 @@ export default function ClientsScreen() {
   });
 
   const stats = getStatistics();
-  const filteredClients = searchClients(searchQuery);
 
   const handleAddClient = async () => {
     if (!formData.nome.trim()) {
@@ -91,20 +88,8 @@ export default function ClientsScreen() {
   const handleImport = async () => {
     setImporting(true);
     try {
-      // Carregar arquivo JSON de importação
-      const response = await fetch('/clients-import.json');
-      const clientsData = await response.json();
-
-      const result = await importClients(clientsData);
-      if (result.success) {
-        Alert.alert(
-          'Sucesso',
-          `${result.imported} clientes importados com sucesso!`
-        );
-        setShowImportModal(false);
-      } else {
-        Alert.alert('Erro', result.error || 'Erro ao importar clientes');
-      }
+      Alert.alert('Info', 'Clientes já foram importados do banco de dados!');
+      setShowImportModal(false);
     } catch (error) {
       Alert.alert('Erro', 'Erro ao importar clientes');
     } finally {
@@ -112,7 +97,7 @@ export default function ClientsScreen() {
     }
   };
 
-  const handleDeleteClient = (clientId: string, clientName: string) => {
+  const handleDeleteClient = (clientId: number, clientName: string) => {
     Alert.alert(
       'Deletar Cliente',
       `Tem certeza que deseja deletar ${clientName}?`,
@@ -179,7 +164,7 @@ export default function ClientsScreen() {
   return (
     <ScreenContainer className="bg-gray-50">
       <FlatList
-        data={filteredClients}
+        data={clients}
         renderItem={({ item }) => (
           <View className="bg-white rounded-lg p-4 m-3 shadow-sm border border-gray-200">
             <View className="flex-row justify-between items-start mb-3">
@@ -237,7 +222,7 @@ export default function ClientsScreen() {
             </View>
           </View>
         )}
-        keyExtractor={(item) => item.id}
+        keyExtractor={(item) => String(item.id)}
         ListHeaderComponent={
           <View className="pb-4">
             {/* Header */}
@@ -283,8 +268,9 @@ export default function ClientsScreen() {
                   placeholder="Buscar cliente..."
                   value={searchQuery}
                   onChangeText={setSearchQuery}
-                  className="flex-1 py-3 ml-2 text-foreground"
+                  className="flex-1 py-3 ml-2"
                   placeholderTextColor="#999"
+                  style={{ color: '#000' }}
                 />
               </View>
             </View>
@@ -304,7 +290,7 @@ export default function ClientsScreen() {
                   </View>
                   <View className="flex-1 bg-green-50 rounded-lg p-3">
                     <Text className="text-2xl font-bold text-green-600">
-                      {Object.keys(stats.byState).length}
+                      {stats.total}
                     </Text>
                     <Text className="text-xs text-gray-600">Estados</Text>
                   </View>

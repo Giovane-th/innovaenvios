@@ -1,5 +1,5 @@
 import { useCallback } from 'react';
-import { Client } from './use-clients';
+import { Client } from './use-clients-api';
 
 export function useClientReport() {
   // Gerar relatório em CSV
@@ -23,19 +23,19 @@ export function useClientReport() {
 
     const rows = clients.map((client) => [
       client.nome,
-      client.email,
-      client.cpf_cnpj,
-      client.telefone,
-      client.celular,
-      client.endereco,
-      client.numero,
-      client.complemento,
-      client.bairro,
-      client.cep,
-      client.cidade,
-      client.uf,
+      client.email || '',
+      client.cpf_cnpj || '',
+      client.telefone || '',
+      client.celular || '',
+      client.endereco || '',
+      client.numero || '',
+      client.complemento || '',
+      client.bairro || '',
+      client.cep || '',
+      client.cidade || '',
+      client.uf || '',
       client.ponto_referencia || '',
-      new Date(client.createdAt).toLocaleDateString('pt-BR'),
+      new Date().toLocaleDateString('pt-BR'),
     ]);
 
     // Construir CSV
@@ -58,10 +58,11 @@ export function useClientReport() {
     const byState: Record<string, Client[]> = {};
 
     clients.forEach((client) => {
-      if (!byState[client.uf]) {
-        byState[client.uf] = [];
+      const state = client.uf || 'SEM ESTADO';
+      if (!byState[state]) {
+        byState[state] = [];
       }
-      byState[client.uf].push(client);
+      byState[state].push(client);
     });
 
     return byState;
@@ -72,7 +73,7 @@ export function useClientReport() {
     const byCity: Record<string, Client[]> = {};
 
     clients.forEach((client) => {
-      const key = `${client.cidade}, ${client.uf}`;
+      const key = `${client.cidade || 'SEM CIDADE'}, ${client.uf || 'SEM ESTADO'}`;
       if (!byCity[key]) {
         byCity[key] = [];
       }
