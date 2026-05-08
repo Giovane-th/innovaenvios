@@ -119,7 +119,7 @@ const config: ExpoConfig = {
           minSdkVersion: 24,
           compileSdkVersion: 34,
           targetSdkVersion: 34,
-          kotlinVersion: "1.8.0",
+          kotlinVersion: "2.0.21",
           extraMavenRepos: [],
           enableProguardInReleaseBuilds: true,
         },
