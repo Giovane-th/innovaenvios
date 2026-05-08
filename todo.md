@@ -183,11 +183,27 @@
 
 
 ## Dashboard de Relatórios (Concluído)
+## Integração Correios (Concluído)
 
-- [x] Criar endpoints tRPC para relatórios
-- [x] Implementar filtros por período (data início/fim)
-- [x] Criar gráficos de envios por período
-- [x] Implementar exportação para PDF
-- [x] Adicionar controle de acesso (admin only)
-- [x] Criar testes para relatórios (9/9 passando)
-- [x] Validar no Expo Go e web
+- [x] Integração com Correios (existente)
+- [x] Cálculo de frete com tabela de referência
+- [x] Suporte para PAC, SEDEX, SEDEX 12
+- [x] Fallback com ViaCEP para CEP
+- [x] Testes de integração
+
+## Notificações em Tempo Real (Concluído)
+
+- [x] Configurar push notifications (Expo Notifications)
+- [x] Service para notificações (notifications-service.ts)
+- [x] Evento ao criar etiqueta (notifyLabelCreated)
+- [x] Evento ao mudar status (notifyStatusChanged)
+- [x] Armazenamento de tokens de dispositivos
+
+## Relatórios Agendados por Email (Concluído)
+
+- [x] Service de relatórios agendados (scheduled-reports-service.ts)
+- [x] Endpoints tRPC (create, list, update, delete)
+- [x] Tela de gerenciamento (scheduled-reports.tsx)
+- [x] Suporte para frequências (diário, semanal, mensal)
+- [x] Geração de HTML para email
+- [x] Testes (9/9 passando)

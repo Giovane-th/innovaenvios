@@ -7,6 +7,7 @@ import * as correios from "./correios.js";
 import * as db from "./db.js";
 import * as authDb from "./auth-db.js";
 import * as reportsDb from "./reports-db.js";
+import * as scheduledReportsService from "./scheduled-reports-service.js";
 import { CorreiosIntegration } from "../lib/services/correios-integration.js";
 
 export const appRouter = router({
@@ -555,6 +556,50 @@ export const appRouter = router({
     getSummary: protectedProcedure
       .query(async () => {
         return await reportsDb.getReportSummary();
+      }),
+  }),
+
+  scheduledReports: router({
+    create: protectedProcedure
+      .input(z.object({
+        email: z.string().email(),
+        frequency: z.enum(['daily', 'weekly', 'monthly']),
+        reportType: z.enum(['shipping', 'revenue', 'summary']),
+      }))
+      .mutation(async ({ input, ctx }) => {
+        const userId = (ctx.user as any)?.id || 0;
+        return await scheduledReportsService.createScheduledReport(
+          userId,
+          input.email,
+          input.frequency,
+          input.reportType
+        );
+      }),
+
+    list: protectedProcedure
+      .query(async ({ ctx }) => {
+        const userId = (ctx.user as any)?.id || 0;
+        return await scheduledReportsService.listScheduledReports(userId);
+      }),
+
+    update: protectedProcedure
+      .input(z.object({
+        id: z.number(),
+        frequency: z.enum(['daily', 'weekly', 'monthly']).optional(),
+        enabled: z.boolean().optional(),
+      }))
+      .mutation(async ({ input }) => {
+        return await scheduledReportsService.updateScheduledReport(input.id, {
+          frequency: input.frequency,
+          enabled: input.enabled,
+        });
+      }),
+
+    delete: protectedProcedure
+      .input(z.object({ id: z.number() }))
+      .mutation(async ({ input }) => {
+        await scheduledReportsService.deleteScheduledReport(input.id);
+        return { success: true };
       }),
   }),
 });
