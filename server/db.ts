@@ -1,4 +1,4 @@
-import { eq, like, and } from "drizzle-orm";
+import { eq, like, and, or } from "drizzle-orm";
 import { drizzle } from "drizzle-orm/mysql2";
 import { InsertUser, users, clients, InsertClient, Client, shippingLabels, InsertShippingLabel, ShippingLabel, employees, InsertEmployee, Employee, settings, InsertSetting, Setting } from "../drizzle/schema";
 import { ENV } from "./_core/env";
@@ -175,7 +175,7 @@ export async function searchClients(query: string): Promise<Client[]> {
       .select()
       .from(clients)
       .where(
-        and(
+        or(
           like(clients.nome, searchTerm),
           like(clients.email, searchTerm),
           like(clients.cpf_cnpj, searchTerm),

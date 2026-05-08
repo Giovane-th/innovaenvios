@@ -1,0 +1,31 @@
+{
+  "query": "SELECT COUNT(*) as total_clients FROM clients; SELECT nome FROM clients LIMIT 5;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3fjqT7GiFY8pZEt.root --database DzZpCobgrtCAfaHT4VVRne --execute SELECT COUNT(*) as total_clients FROM clients; SELECT nome FROM clients LIMIT 5;",
+  "rows": [
+    {
+      "total_clients": "1108"
+    },
+    {
+      "total_clients": "nome"
+    },
+    {
+      "total_clients": "POLYSTAR COMERCIO DE ESSENCIAIS LTDA"
+    },
+    {
+      "total_clients": "Elaine Ramos de Oliveira"
+    },
+    {
+      "total_clients": "Rita de Cassia"
+    },
+    {
+      "total_clients": "Wijaney Alcântara da silva"
+    },
+    {
+      "total_clients": "Jualiana Oliveira"
+    }
+  ],
+  "messages": [],
+  "stdout": "total_clients\n1108\nnome\nPOLYSTAR COMERCIO DE ESSENCIAIS LTDA\nElaine Ramos de Oliveira\nRita de Cassia\nWijaney Alcântara da silva\nJualiana Oliveira\n",
+  "stderr": "",
+  "execution_time_ms": 263
+}

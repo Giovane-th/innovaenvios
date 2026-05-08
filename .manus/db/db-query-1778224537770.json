@@ -1,0 +1,19 @@
+{
+  "query": "SELECT DISTINCT cidade FROM clients LIMIT 10; SELECT COUNT(DISTINCT cidade) as total_cities FROM clients;",
+  "command": "mysql --batch --raw --column-names --default-character-set=utf8mb4 --host gateway06.us-east-1.prod.aws.tidbcloud.com --port 4000 --user 3fjqT7GiFY8pZEt.root --database DzZpCobgrtCAfaHT4VVRne --execute SELECT DISTINCT cidade FROM clients LIMIT 10; SELECT COUNT(DISTINCT cidade) as total_cities FROM clients;",
+  "rows": [
+    {
+      "cidade": "NULL"
+    },
+    {
+      "cidade": "total_cities"
+    },
+    {
+      "cidade": "0"
+    }
+  ],
+  "messages": [],
+  "stdout": "cidade\nNULL\ntotal_cities\n0\n",
+  "stderr": "",
+  "execution_time_ms": 424
+}

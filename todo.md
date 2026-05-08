@@ -171,3 +171,12 @@
 - [ ] Criar tela de relatórios com filtro por funcionário
 - [ ] Implementar exportação de relatórios (PDF/Excel)
 - [ ] Adicionar histórico de etiquetas por funcionário
+
+
+## Bugs Corrigidos (Sessão Atual)
+
+- [x] Autocomplete de clientes não estava funcionando (bug: AND em vez de OR)
+- [x] 1.108 clientes não foram importados (JSON com NaN)
+- [x] Cidades não estavam sendo preenchidas (campo Cidade com C maiúsculo)
+- [x] Testes de busca criados e validados (9/9 passando)
+- [x] searchClients endpoint corrigido para usar OR em vez de AND
