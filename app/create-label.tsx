@@ -18,7 +18,9 @@ import { cn } from "@/lib/utils";
 import { AddStudentModal } from "./add-student-modal";
 import { useStudents } from "@/hooks/use-students";
 import { FreteSelector } from "@/components/frete-selector";
+import { LabelPrintButton } from "@/components/label-print-button";
 import type { FreteOption } from "@/hooks/use-correios-freight";
+import type { LabelData } from "@/lib/services/label-generator";
 
 interface FormData {
   // Remetente
@@ -475,32 +477,65 @@ export default function CreateLabelScreen() {
         )}
 
         {/* Action Buttons */}
-        <View className="flex-row gap-3 mt-8 mb-8">
-          <TouchableOpacity
-            className="flex-1 py-3 rounded-lg bg-surface border border-border items-center justify-center"
-            activeOpacity={0.7}
-          >
-            <Text className="text-foreground font-semibold">Cancelar</Text>
-          </TouchableOpacity>
+        <View className="flex-col gap-3 mt-8 mb-8">
+          {/* Print Button - Visible when frete is selected */}
+          {selectedFrete && (
+            <LabelPrintButton
+              labelData={{
+                senderName: form.senderName,
+                senderAddress: form.senderAddress,
+                senderNumber: form.senderNumber,
+                senderCity: form.senderCity,
+                senderState: form.senderState,
+                senderCEP: form.senderCEP,
+                recipientName: form.recipientName,
+                recipientAddress: form.recipientAddress,
+                recipientNumber: form.recipientNumber,
+                recipientComplement: form.recipientComplement,
+                recipientCity: form.recipientCity,
+                recipientState: form.recipientState,
+                recipientCEP: form.recipientCEP,
+                recipientPhone: form.recipientPhone,
+                weight: parseFloat(form.weight) || 0,
+                serviceType: form.serviceType,
+                description: form.description,
+                declaredValue: parseFloat(form.declaredValue) || 0,
+                trackingCode: `AA${Math.random().toString().slice(2, 11)}BR`,
+              } as LabelData}
+              onSuccess={() => {
+                Alert.alert("Sucesso", "Etiqueta gerada com sucesso!");
+              }}
+            />
+          )}
 
-          <TouchableOpacity
-            onPress={handleGenerateLabel}
-            disabled={loading}
-            className={cn(
-              "flex-1 py-3 rounded-lg flex-row items-center justify-center gap-2",
-              loading ? "bg-primary opacity-70" : "bg-primary"
-            )}
-            activeOpacity={0.8}
-          >
-            {loading ? (
-              <ActivityIndicator color="white" size="small" />
-            ) : (
-              <MaterialIcons name="check" size={20} color="white" />
-            )}
-            <Text className="text-white font-semibold">
-              {loading ? "Gerando..." : "Gerar Etiqueta"}
-            </Text>
-          </TouchableOpacity>
+          {/* Main Action Buttons */}
+          <View className="flex-row gap-3">
+            <TouchableOpacity
+              className="flex-1 py-3 rounded-lg bg-surface border border-border items-center justify-center"
+              activeOpacity={0.7}
+            >
+              <Text className="text-foreground font-semibold">Cancelar</Text>
+            </TouchableOpacity>
+
+            <TouchableOpacity
+              onPress={handleGenerateLabel}
+              disabled={loading}
+              className={cn(
+                "flex-1 py-3 rounded-lg flex-row items-center justify-center gap-2",
+                loading ? "bg-primary opacity-70" : "bg-primary"
+              )}
+              activeOpacity={0.8}
+            >
+              {loading ? (
+                <ActivityIndicator color="white" size="small" />
+              ) : (
+                <MaterialIcons name="check" size={20} color="white" />
+              )}
+              <Text className="text-white font-semibold">
+                {loading ? "Gerando..." : "Gerar Etiqueta"}
+              </Text>
+            </TouchableOpacity>
+          </View>
         </View>
       </ScrollView>
 
