@@ -9,14 +9,36 @@ let _db: ReturnType<typeof drizzle> | null = null;
 
 // Lazily create the drizzle instance so local tooling can run without a DB.
 export async function getDb() {
-  if (!_db && process.env.DATABASE_URL) {
+  if (_db) return _db;
+  
+  // Try DATABASE_URL first
+  let dbUrl = process.env.DATABASE_URL;
+  
+  // If not available, try to build from individual components
+  if (!dbUrl && process.env.DB_HOST) {
+    const host = process.env.DB_HOST || 'localhost';
+    const port = process.env.DB_PORT || '3306';
+    const user = process.env.DB_USER || 'root';
+    const password = process.env.DB_PASSWORD || '';
+    const database = process.env.DB_NAME || 'innovaenvios';
+    
+    // MySQL connection string format
+    dbUrl = `mysql://${user}${password ? ':' + password : ''}@${host}:${port}/${database}`;
+  }
+  
+  if (dbUrl) {
     try {
-      _db = drizzle(process.env.DATABASE_URL);
+      console.log('[Database] Connecting to database...');
+      _db = drizzle(dbUrl);
+      console.log('[Database] Connected successfully');
     } catch (error) {
       console.warn("[Database] Failed to connect:", error);
       _db = null;
     }
+  } else {
+    console.warn('[Database] No database URL or credentials provided - running in offline mode');
   }
+  
   return _db;
 }
 
