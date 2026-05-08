@@ -28,7 +28,7 @@ const schemeFromBundleId = `manus${timestamp}`;
 
 const env = {
   // App branding - update these values directly (do not use env vars)
-  appName: "In’Nova Envios",
+  appName: "In'Nova Envios",
   appSlug: "innova-envios",
   // S3 URL of the app logo - set this to the URL returned by generate_image when creating custom logo
   // Leave empty to use the default icon from assets/images/icon.png
@@ -126,11 +126,14 @@ const config: ExpoConfig = {
 -keep class expo.** { *; }
 -keep interface expo.modules.** { *; }
 -keep interface expo.** { *; }
+-keep class * extends expo.modules.core.ModuleRegistry { *; }
+-keep class * implements expo.modules.core.interfaces.** { *; }
 -keepclassmembers class * {
-  *** *Expo*(...) <methods>;
+  public *** *Expo*(...);
 }
 -dontwarn expo.modules.**
--dontwarn expo.**`,
+-dontwarn expo.**
+-dontwarn java.lang.invoke.**`,
         },
       },
     ],
