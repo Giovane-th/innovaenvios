@@ -110,7 +110,7 @@ export type InsertEmployee = typeof employees.$inferInsert;
 // Tabela de configurações
 export const settings = mysqlTable("settings", {
   id: int("id").autoincrement().primaryKey(),
-  companyName: varchar("companyName", { length: 255 }).notNull().default("In'Nova Envios"),
+  companyName: varchar("companyName", { length: 255 }).notNull().default("InNova Envios - IEP"),
   cnpj: varchar("cnpj", { length: 20 }),
   address: varchar("address", { length: 255 }),
   city: varchar("city", { length: 100 }),

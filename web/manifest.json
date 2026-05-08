@@ -1,6 +1,6 @@
 {
-  "name": "In'Nova Envios - Gestão de Envios",
-  "short_name": "In'Nova Envios",
+  "name": "InNova Envios - IEP - Gestão de Envios",
+  "short_name": "InNova Envios - IEP",
   "description": "Sistema de Gestão de Envios e Etiquetas dos Correios",
   "start_url": "/",
   "display": "standalone",

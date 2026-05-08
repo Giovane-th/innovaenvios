@@ -35,7 +35,7 @@ export default function TabLayout() {
           {/* Logo/Header */}
           <View style={{ paddingHorizontal: 16, marginBottom: 32 }}>
             <Text style={{ fontSize: 18, fontWeight: "bold", color: colors.foreground }}>
-              In'Nova Envios
+              InNova Envios - IEP
             </Text>
           </View>
 

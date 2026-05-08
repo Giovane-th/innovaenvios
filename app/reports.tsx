@@ -172,7 +172,7 @@ export default function ReportsScreen() {
             </div>
 
             <div class="footer">
-              <p>Relatório gerado automaticamente pelo sistema In'Nova Envios</p>
+              <p>Relatório gerado automaticamente pelo sistema InNova Envios - IEP</p>
             </div>
           </body>
         </html>
