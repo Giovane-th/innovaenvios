@@ -117,8 +117,8 @@ const config: ExpoConfig = {
         android: {
           buildArchs: ["arm64-v8a"],
           minSdkVersion: 24,
-          compileSdkVersion: 34,
-          targetSdkVersion: 34,
+          compileSdkVersion: 36,
+          targetSdkVersion: 36,
           kotlinVersion: "2.0.21",
           extraMavenRepos: [],
           enableProguardInReleaseBuilds: true,
