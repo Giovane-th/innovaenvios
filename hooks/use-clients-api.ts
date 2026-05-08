@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { trpc } from '@/lib/trpc';
 
 export interface Client {
@@ -19,89 +19,59 @@ export interface Client {
 }
 
 export function useClientsAPI() {
-  const [clients, setClients] = useState<Client[]>([]);
-  const [loading, setLoading] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
-  const [filteredClients, setFilteredClients] = useState<Client[]>([]);
 
-  // Carregar todos os clientes ao iniciar
-  useEffect(() => {
-    loadClients();
-  }, []);
+  // Carregar todos os clientes
+  const { data: clients = [], isLoading: loading } = trpc.clients.list.useQuery();
 
-  // Filtrar clientes quando a busca mudar
-  useEffect(() => {
-    if (searchQuery.trim()) {
-      searchClientsAPI(searchQuery);
-    } else {
-      setFilteredClients(clients);
-    }
-  }, [searchQuery, clients]);
+  // Buscar clientes por query
+  const { data: searchResults = [] } = trpc.clients.search.useQuery(
+    { query: searchQuery },
+    { enabled: searchQuery.trim().length > 0 }
+  );
 
-  const loadClients = useCallback(async () => {
-    try {
-      setLoading(true);
-      const result = await (trpc.clients.list as any).query();
-      setClients(result);
-      setFilteredClients(result);
-    } catch (error) {
-      console.error('Erro ao carregar clientes:', error);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  // Mutations
+  const createMutation = trpc.clients.create.useMutation();
+  const updateMutation = trpc.clients.update.useMutation();
+  const deleteMutation = trpc.clients.delete.useMutation();
 
-  const searchClientsAPI = useCallback(async (query: string) => {
-    try {
-      setLoading(true);
-      const result = await (trpc.clients.search as any).query({ query });
-      setFilteredClients(result);
-    } catch (error) {
-      console.error('Erro ao buscar clientes:', error);
-      setFilteredClients([]);
-    } finally {
-      setLoading(false);
-    }
-  }, []);
+  const filteredClients = searchQuery.trim() ? searchResults : clients;
 
   const addClient = useCallback(async (clientData: Omit<Client, 'id'>) => {
     try {
-      const result = await (trpc.clients.create as any).mutate(clientData);
-      const updated = [...clients, result];
-      setClients(updated);
-      setFilteredClients(updated);
+      const cleanData = Object.fromEntries(
+        Object.entries(clientData).filter(([, v]) => v !== null)
+      );
+      await createMutation.mutateAsync(cleanData as any);
       return { success: true };
     } catch (error) {
       console.error('Erro ao adicionar cliente:', error);
       return { success: false, error: 'Erro ao adicionar cliente' };
     }
-  }, [clients]);
+  }, [createMutation]);
 
   const updateClient = useCallback(async (id: number, clientData: Partial<Client>) => {
     try {
-      const result = await (trpc.clients.update as any).mutate({ id, ...clientData });
-      const updated = clients.map((c) => (c.id === id ? result : c));
-      setClients(updated);
-      setFilteredClients(updated);
+      const cleanData = Object.fromEntries(
+        Object.entries(clientData).filter(([, v]) => v !== null)
+      );
+      await updateMutation.mutateAsync({ id, ...cleanData } as any);
       return { success: true };
     } catch (error) {
       console.error('Erro ao atualizar cliente:', error);
       return { success: false, error: 'Erro ao atualizar cliente' };
     }
-  }, [clients]);
+  }, [updateMutation]);
 
   const deleteClient = useCallback(async (id: number) => {
     try {
-      await (trpc.clients.delete as any).mutate({ id });
-      const updated = clients.filter((c) => c.id !== id);
-      setClients(updated);
-      setFilteredClients(updated);
+      await deleteMutation.mutateAsync({ id });
       return { success: true };
     } catch (error) {
       console.error('Erro ao deletar cliente:', error);
       return { success: false, error: 'Erro ao deletar cliente' };
     }
-  }, [clients]);
+  }, [deleteMutation]);
 
   const getStatistics = useCallback(() => {
     return {
@@ -121,6 +91,5 @@ export function useClientsAPI() {
     updateClient,
     deleteClient,
     getStatistics,
-    loadClients,
   };
 }
