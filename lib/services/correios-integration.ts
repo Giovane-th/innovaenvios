@@ -90,8 +90,10 @@ function calcularValorFrete(
   const precoKm = precoPorKm[servico as keyof typeof precoPorKm] || 0.05;
   const taxa = taxaBase[servico as keyof typeof taxaBase] || 15;
   
-  // Valor = taxa base + (distância * preço/km) + (peso * 0.5)
-  const valor = taxa + (distancia * precoKm) + (peso * 0.5);
+  // Valor = taxa base + (distância * preço/km) + (peso em KG * 0.5)
+  // Peso vem em gramas, converter para kg
+  const pesoKg = peso / 1000;
+  const valor = taxa + (distancia * precoKm) + (pesoKg * 0.5);
   
   return Math.round(valor * 100) / 100; // Arredondar para 2 casas decimais
 }

@@ -187,6 +187,7 @@ export default function CreateLabelScreen() {
         placeholderTextColor={colors.muted}
         editable={editable}
         keyboardType={keyboardType as any}
+        style={{ color: '#000' }}
         className={cn(
           "border border-border rounded-lg px-4 py-3 text-foreground bg-surface",
           !editable && "opacity-50"

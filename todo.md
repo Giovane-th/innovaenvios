@@ -207,3 +207,9 @@
 - [x] Suporte para frequências (diário, semanal, mensal)
 - [x] Geração de HTML para email
 - [x] Testes (9/9 passando)
+
+## Bugs Reportados (Sessão Atual)
+
+- [ ] TextInput não mostra texto digitado no Expo Go (cor invisível)
+- [ ] Botão "Criar Etiqueta" não aparece após selecionar frete
+- [ ] Valores de frete incorretos (peso em gramas em vez de kg)

@@ -122,6 +122,15 @@ const config: ExpoConfig = {
           kotlinVersion: "2.0.21",
           extraMavenRepos: [],
           enableProguardInReleaseBuilds: true,
+          extraProguardRules: `-keep class expo.modules.** { *; }
+-keep class expo.** { *; }
+-keep interface expo.modules.** { *; }
+-keep interface expo.** { *; }
+-keepclassmembers class * {
+  *** *Expo*(...) <methods>;
+}
+-dontwarn expo.modules.**
+-dontwarn expo.**`,
         },
       },
     ],
