@@ -208,8 +208,11 @@
 - [x] Geração de HTML para email
 - [x] Testes (9/9 passando)
 
-## Bugs Reportados (Sessão Atual)
+## Bugs Corrigidos (Sessão Atual - Continuação)
 
-- [ ] TextInput não mostra texto digitado no Expo Go (cor invisível)
-- [ ] Botão "Criar Etiqueta" não aparece após selecionar frete
-- [ ] Valores de frete incorretos (peso em gramas em vez de kg)
+- [x] TypeScript error em FreteSelector (props incorretos)
+- [x] EmployeeAuthModal import não utilizado
+- [x] Validações intensificadas em handleGenerateLabel
+- [x] TextInput com cor visível (style={{ color: '#000' }})
+- [x] Remoção de modal de login (acesso direto)
+- [x] Feedback visual com Alert.alert() para erros

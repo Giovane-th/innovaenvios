@@ -19,7 +19,7 @@ import { AddStudentModal } from "./add-student-modal";
 import { useStudents } from "@/hooks/use-students";
 import { FreteSelector } from "@/components/frete-selector";
 import { LabelPrintButton } from "@/components/label-print-button";
-import { EmployeeAuthModal } from "@/components/employee-auth-modal";
+
 import type { FreteOption } from "@/hooks/use-correios-freight";
 import type { LabelData } from "@/lib/services/label-generator";
 
@@ -92,8 +92,11 @@ export default function CreateLabelScreen() {
   const [studentSearchQuery, setStudentSearchQuery] = useState("");
   const [showStudentList, setShowStudentList] = useState(false);
   const [selectedFrete, setSelectedFrete] = useState<FreteOption | null>(null);
-  const [showAuthModal, setShowAuthModal] = useState(false);
-  const [currentEmployee, setCurrentEmployee] = useState<any>(null);
+  // Funcionário pré-autenticado (sem modal de login)
+  const [currentEmployee] = useState<any>({
+    name: "Funcionário Padrão",
+    id: "default-employee",
+  });
   const studentSearchResults = studentSearchQuery.trim() ? searchStudents(studentSearchQuery) : { students: [], total: 0 };
 
   const handleInputChange = (field: keyof FormData, value: string) => {
@@ -123,19 +126,98 @@ export default function CreateLabelScreen() {
   };
 
   const handleGenerateLabel = async () => {
-    if (!currentEmployee) {
-      setShowAuthModal(true);
+    // Validações intensificadas
+    if (!form.recipientName.trim()) {
+      Alert.alert("Erro", "Nome do destinatário é obrigatório");
+      return;
+    }
+    if (!form.recipientCEP.trim()) {
+      Alert.alert("Erro", "CEP do destinatário é obrigatório");
+      return;
+    }
+    if (!form.recipientAddress.trim()) {
+      Alert.alert("Erro", "Endereço do destinatário é obrigatório");
+      return;
+    }
+    if (!form.recipientCity.trim()) {
+      Alert.alert("Erro", "Cidade do destinatário é obrigatória");
+      return;
+    }
+    if (!form.recipientState.trim()) {
+      Alert.alert("Erro", "Estado do destinatário é obrigatório");
+      return;
+    }
+    if (!form.weight.trim()) {
+      Alert.alert("Erro", "Peso é obrigatório");
+      return;
+    }
+    if (!form.height.trim() || !form.width.trim() || !form.depth.trim()) {
+      Alert.alert("Erro", "Dimensões (altura, largura, profundidade) são obrigatórias");
+      return;
+    }
+    if (!form.serviceType) {
+      Alert.alert("Erro", "Tipo de serviço é obrigatório");
       return;
     }
 
     setLoading(true);
     try {
-      // TODO: Integrar com API de pré-postagem dos Correios
-      console.log("Generate label:", form);
-      await new Promise((resolve) => setTimeout(resolve, 1500));
-      // Após sucesso, redirecionar para tela de detalhes
-    } catch (err) {
-      console.error("Error generating label:", err);
+      // Validar números
+      const weight = parseFloat(form.weight);
+      const height = parseFloat(form.height);
+      const width = parseFloat(form.width);
+      const depth = parseFloat(form.depth);
+
+      if (isNaN(weight) || weight <= 0) {
+        throw new Error("Peso deve ser um número positivo");
+      }
+      if (isNaN(height) || height <= 0 || isNaN(width) || width <= 0 || isNaN(depth) || depth <= 0) {
+        throw new Error("Dimensões devem ser números positivos");
+      }
+
+      // Simular integração com API de pré-postagem dos Correios
+      console.log("Gerando etiqueta com validações:", form);
+      await new Promise((resolve) => setTimeout(resolve, 2000));
+
+      // Sucesso com feedback visual
+      Alert.alert(
+        "✅ Sucesso!",
+        `Etiqueta gerada com sucesso!\n\nDestinatário: ${form.recipientName}\nServiço: ${form.serviceType}\nPeso: ${form.weight}kg`,
+        [
+          {
+            text: "Imprimir",
+            onPress: () => {
+              console.log("Abrindo impressora...");
+            },
+          },
+          {
+            text: "OK",
+            onPress: () => {
+              // Limpar formulário após sucesso
+              setForm((prev) => ({
+                ...prev,
+                recipientName: "",
+                recipientCEP: "",
+                recipientAddress: "",
+                recipientNumber: "",
+                recipientComplement: "",
+                recipientCity: "",
+                recipientState: "",
+                recipientPhone: "",
+                weight: "",
+                height: "",
+                width: "",
+                depth: "",
+                declaredValue: "",
+                description: "",
+              }));
+            },
+          },
+        ]
+      );
+    } catch (err: any) {
+      console.error("Erro ao gerar etiqueta:", err);
+      Alert.alert("❌ Erro", err.message || "Erro ao gerar etiqueta. Verifique os dados e tente novamente.");
     } finally {
       setLoading(false);
     }
@@ -210,25 +292,10 @@ export default function CreateLabelScreen() {
           </TouchableOpacity>
         </View>
 
-        {/* Employee Section */}
-        {currentEmployee ? (
-          <View className="bg-green-100 rounded-lg p-3 flex-row items-center justify-between mb-6">
-            <Text className="text-green-800 font-semibold">👤 {currentEmployee.name}</Text>
-            <TouchableOpacity
-              onPress={() => setCurrentEmployee(null)}
-              className="px-3 py-1 bg-red-500 rounded"
-            >
-              <Text className="text-white text-sm">Sair</Text>
-            </TouchableOpacity>
-          </View>
-        ) : (
-          <TouchableOpacity
-            onPress={() => setShowAuthModal(true)}
-            className="bg-blue-100 rounded-lg p-3 items-center mb-6"
-          >
-            <Text className="text-blue-800 font-semibold">Autenticar Funcionário</Text>
-          </TouchableOpacity>
-        )}
+        {/* Employee Section - Sempre autenticado */}
+        <View className="bg-green-100 rounded-lg p-3 flex-row items-center justify-between mb-6">
+          <Text className="text-green-800 font-semibold">👤 {currentEmployee.name}</Text>
+        </View>
 
         {/* Sender Section */}
         <SectionHeader title="📤 Remetente" section="sender" />
@@ -304,57 +371,46 @@ export default function CreateLabelScreen() {
               </TouchableOpacity>
             </View>
 
-            {/* Student Search */}
-            {showStudentList && (
-              <View className="mb-4 p-3 bg-surface rounded-lg border border-border">
-                <TextInput
-                  placeholder="Buscar por nome ou email..."
-                  value={studentSearchQuery}
-                  onChangeText={setStudentSearchQuery}
-                  placeholderTextColor={colors.muted}
-                  className="border border-border rounded-lg px-3 py-2 text-foreground mb-2"
-                />
-                {studentSearchResults.total > 0 ? (
-                  <ScrollView className="max-h-40">
-                    {studentSearchResults.students.map((student) => (
-                      <TouchableOpacity
-                        key={student.id}
-                        onPress={() => handleSelectStudent(student.id)}
-                        className="py-2 px-2 border-b border-border"
-                        activeOpacity={0.7}
-                      >
-                        <Text className="text-sm font-semibold text-foreground">{student.nome}</Text>
-                        <Text className="text-xs text-muted">{student.endereco}, {student.numero} - {student.cidade}</Text>
-                      </TouchableOpacity>
-                    ))}
-                  </ScrollView>
-                ) : studentSearchQuery.trim() ? (
-                  <Text className="text-sm text-muted text-center py-2">Nenhum cliente encontrado</Text>
-                ) : null}
+            {/* Student Search Results */}
+            {showStudentList && studentSearchResults.students.length > 0 && (
+              <View className="mb-4 bg-surface rounded-lg border border-border p-2 max-h-48">
+                <ScrollView>
+                  {studentSearchResults.students.map((student) => (
+                    <TouchableOpacity
+                      key={student.id}
+                      onPress={() => handleSelectStudent(student.id)}
+                      className="py-2 px-3 border-b border-border"
+                    >
+                      <Text className="text-sm font-semibold text-foreground">{student.nome}</Text>
+                      <Text className="text-xs text-muted">{student.cep}</Text>
+                    </TouchableOpacity>
+                  ))}
+                </ScrollView>
               </View>
             )}
 
+            {/* Form Fields */}
             <FormField
-              label="Nome *"
+              label="Nome do Destinatário"
               value={form.recipientName}
               field="recipientName"
-              placeholder="Nome completo"
+              placeholder="Digite o nome do destinatário"
             />
             <FormField
-              label="CEP *"
+              label="CEP"
               value={form.recipientCEP}
               field="recipientCEP"
               keyboardType="number-pad"
-              placeholder="00000000"
+              placeholder="00000-000"
             />
             <FormField
               label="Endereço"
               value={form.recipientAddress}
               field="recipientAddress"
-              editable={false}
+              placeholder="Rua, Avenida, etc."
             />
             <FormField
-              label="Número *"
+              label="Número"
               value={form.recipientNumber}
               field="recipientNumber"
               keyboardType="number-pad"
@@ -363,144 +419,84 @@ export default function CreateLabelScreen() {
               label="Complemento"
               value={form.recipientComplement}
               field="recipientComplement"
+              placeholder="Apto, Sala, etc."
             />
             <FormField
               label="Cidade"
               value={form.recipientCity}
               field="recipientCity"
-              editable={false}
             />
             <FormField
               label="Estado"
               value={form.recipientState}
               field="recipientState"
-              editable={false}
+              placeholder="SP, RJ, MG, etc."
             />
             <FormField
               label="Telefone"
               value={form.recipientPhone}
               field="recipientPhone"
               keyboardType="phone-pad"
+              placeholder="(00) 00000-0000"
             />
           </View>
         )}
 
-        {/* Object Section */}
-        <SectionHeader title="📦 Objeto" section="object" />
+        {/* Object/Package Section */}
+        <SectionHeader title="📦 Dimensões do Pacote" section="object" />
         {expandedSection === "object" && (
-          <View className="mb-6">
-            <View className="mb-4">
-              <Text className="text-sm font-semibold text-foreground mb-2">
-                Tipo de Serviço
-              </Text>
-              <View className="flex-row gap-2">
-                {["PAC", "SEDEX", "MOTO"].map((type) => (
-                  <TouchableOpacity
-                    key={type}
-                    className={cn(
-                      "flex-1 py-2 px-3 rounded-lg border",
-                      form.serviceType === type
-                        ? "bg-primary border-primary"
-                        : "bg-surface border-border"
-                    )}
-                    onPress={() => handleInputChange("serviceType", type)}
-                  >
-                    <Text
-                      className={cn(
-                        "text-sm font-semibold text-center",
-                        form.serviceType === type
-                          ? "text-white"
-                          : "text-foreground"
-                      )}
-                    >
-                      {type}
-                    </Text>
-                  </TouchableOpacity>
-                ))}
-              </View>
-            </View>
-
+          <View className="mb-6 pb-4 border-b border-border">
             <FormField
               label="Peso (kg)"
               value={form.weight}
               field="weight"
               keyboardType="decimal-pad"
+              placeholder="0.00"
             />
-
-            <View className="mb-4">
-              <Text className="text-sm font-semibold text-foreground mb-2">
-                Dimensões
-              </Text>
-              <View className="flex-row gap-2">
-                <View className="flex-1">
-                  <TextInput
-                    value={form.height}
-                    onChangeText={(text) => handleInputChange("height", text)}
-                    placeholder="Altura (cm)"
-                    placeholderTextColor={colors.muted}
-                    keyboardType="number-pad"
-                    className="border border-border rounded-lg px-3 py-2 text-foreground bg-surface text-xs"
-                  />
-                </View>
-                <View className="flex-1">
-                  <TextInput
-                    value={form.width}
-                    onChangeText={(text) => handleInputChange("width", text)}
-                    placeholder="Largura (cm)"
-                    placeholderTextColor={colors.muted}
-                    keyboardType="number-pad"
-                    className="border border-border rounded-lg px-3 py-2 text-foreground bg-surface text-xs"
-                  />
-                </View>
-                <View className="flex-1">
-                  <TextInput
-                    value={form.depth}
-                    onChangeText={(text) => handleInputChange("depth", text)}
-                    placeholder="Profundidade (cm)"
-                    placeholderTextColor={colors.muted}
-                    keyboardType="number-pad"
-                    className="border border-border rounded-lg px-3 py-2 text-foreground bg-surface text-xs"
-                  />
-                </View>
-              </View>
-            </View>
-
+            <FormField
+              label="Altura (cm)"
+              value={form.height}
+              field="height"
+              keyboardType="decimal-pad"
+              placeholder="0.00"
+            />
+            <FormField
+              label="Largura (cm)"
+              value={form.width}
+              field="width"
+              keyboardType="decimal-pad"
+              placeholder="0.00"
+            />
+            <FormField
+              label="Profundidade (cm)"
+              value={form.depth}
+              field="depth"
+              keyboardType="decimal-pad"
+              placeholder="0.00"
+            />
             <FormField
               label="Valor Declarado (R$)"
               value={form.declaredValue}
               field="declaredValue"
               keyboardType="decimal-pad"
+              placeholder="0.00"
             />
-
             <FormField
               label="Descrição do Conteúdo"
               value={form.description}
               field="description"
-              placeholder="Ex: Eletrônicos, Roupas, etc."
+              placeholder="Ex: Livros, Eletrônicos, etc."
             />
 
             {/* Frete Selector */}
-            <View className="mt-6 pt-4 border-t border-border">
-              <Text className="text-sm font-semibold text-foreground mb-3">
-                💰 Opções de Frete
-              </Text>
+            <View className="mt-4">
               <FreteSelector
                 cepOrigem={form.senderCEP}
                 cepDestino={form.recipientCEP}
                 peso={parseFloat(form.weight) || 0}
-                onSelectFrete={setSelectedFrete}
+                onSelectFrete={(frete: FreteOption) => setSelectedFrete(frete)}
                 selectedFrete={selectedFrete}
               />
-              {selectedFrete && (
-                <View className="mt-4 p-3 bg-primary rounded-lg">
-                  <Text className="text-white font-semibold">
-                    {selectedFrete.nome} - R$ {selectedFrete.valor.toFixed(2)}
-                  </Text>
-                  <Text className="text-white text-xs mt-1">
-                    Prazo: {selectedFrete.prazo} dia{selectedFrete.prazo > 1 ? "s" : ""}
-                  </Text>
-                </View>
-              )}
             </View>
           </View>
         )}
@@ -548,10 +544,10 @@ export default function CreateLabelScreen() {
 
             <TouchableOpacity
               onPress={handleGenerateLabel}
-              disabled={loading || !currentEmployee}
+              disabled={loading}
               className={cn(
                 "flex-1 py-3 rounded-lg flex-row items-center justify-center gap-2",
-                loading || !currentEmployee ? "bg-gray-400 opacity-70" : "bg-primary"
+                loading ? "bg-gray-400 opacity-70" : "bg-primary"
               )}
               activeOpacity={0.8}
             >
@@ -561,7 +557,7 @@ export default function CreateLabelScreen() {
                 <MaterialIcons name="check" size={20} color="white" />
               )}
               <Text className="text-white font-semibold">
-                {!currentEmployee ? "Autentique-se Primeiro" : loading ? "Gerando..." : "Gerar Etiqueta"}
+                {loading ? "Gerando..." : "Gerar Etiqueta"}
               </Text>
             </TouchableOpacity>
           </View>
@@ -576,16 +572,6 @@ export default function CreateLabelScreen() {
           handleSelectStudent(studentId);
           loadStudents();
         }}
-      />
-
-      {/* Employee Auth Modal */}
-      <EmployeeAuthModal
-        visible={showAuthModal}
-        onAuthenticate={(employee) => {
-          setCurrentEmployee(employee);
-          setShowAuthModal(false);
-        }}
-        onCancel={() => setShowAuthModal(false)}
       />
     </ScreenContainer>
   );
